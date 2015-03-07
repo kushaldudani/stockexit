@@ -28,10 +28,16 @@ public class ExitWorker implements Runnable {
 		intitialwait();
 		while(true){
 			String info = downloader.downloadData(buysell);
-			String lasttime = info.split("/")[3];
-			double high = Double.parseDouble(info.split("/")[2]);
-			double low = Double.parseDouble(info.split("/")[1]);
-			double price = Double.parseDouble(info.split("/")[0]);
+			String lasttime; double high; double low; double price;
+			try{
+				lasttime = info.split("/")[3];
+				high = Double.parseDouble(info.split("/")[2]);
+				low = Double.parseDouble(info.split("/")[1]);
+				price = Double.parseDouble(info.split("/")[0]);
+			}catch(Exception e){
+				System.out.println("***************MoneyControl did not give valid result*************"+"Thread - " + buysell.getSymbol());
+				continue;
+			}
 			prices.add(price);
 			System.out.println("Thread - " + buysell.getSymbol() + " trying at " + lasttime);
 			if(lasttime.compareTo("09:15") >= 0 && lasttime.compareTo("15:15") <= 0){
@@ -65,7 +71,7 @@ public class ExitWorker implements Runnable {
 	
 	private void intervalwait() {
 		long timestamp = System.currentTimeMillis();
-		int timetowait = (60*1000);
+		int timetowait = (300*1000);
 		while(System.currentTimeMillis() < (timestamp+timetowait)){
 			try {
 				Thread.sleep(timetowait-System.currentTimeMillis()+timestamp);
