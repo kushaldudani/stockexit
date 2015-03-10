@@ -3,6 +3,8 @@ package com.stockexit.net;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.stockexit.util.LoggerUtil;
+
 
 
 
@@ -35,11 +37,11 @@ public class ExitWorker implements Runnable {
 				low = Double.parseDouble(info.split("/")[1]);
 				price = Double.parseDouble(info.split("/")[0]);
 			}catch(Exception e){
-				System.out.println("***************MoneyControl did not give valid result*************"+"Thread - " + buysell.getSymbol());
+				LoggerUtil.getLogger().info("***************MoneyControl did not give valid result*************"+"Thread - " + buysell.getSymbol());
 				continue;
 			}
 			prices.add(price);
-			System.out.println("Thread - " + buysell.getSymbol() + " trying at " + lasttime);
+			LoggerUtil.getLogger().info("Thread - " + buysell.getSymbol() + " trying at " + lasttime);
 			if(lasttime.compareTo("09:15") >= 0 && lasttime.compareTo("15:15") <= 0){
 				sold = estimator.exitMidday(buysell,prices,low,high,lasttime);
 			}
@@ -64,7 +66,7 @@ public class ExitWorker implements Runnable {
 			try {
 				Thread.sleep(timetowait-System.currentTimeMillis()+timestamp);
 			} catch (InterruptedException e) {
-				System.out.println("Thread interrrupted in initial wait - "+buysell.getSymbol());
+				LoggerUtil.getLogger().info("Thread interrrupted in initial wait - "+buysell.getSymbol());
 			}
 		}
 	}
@@ -76,7 +78,7 @@ public class ExitWorker implements Runnable {
 			try {
 				Thread.sleep(timetowait-System.currentTimeMillis()+timestamp);
 			} catch (InterruptedException e) {
-				System.out.println("Thread interrrupted in interval wait - "+buysell.getSymbol());
+				LoggerUtil.getLogger().info("Thread interrrupted in interval wait - "+buysell.getSymbol());
 			}
 		}
 	}

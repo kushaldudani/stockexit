@@ -3,7 +3,6 @@ package com.stockexit.net;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
@@ -14,6 +13,9 @@ import java.util.TimeZone;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+
+import com.stockexit.util.LoggerUtil;
 
 
 public class StockExit {
@@ -24,14 +26,14 @@ public class StockExit {
 		
 		List<String> dates = readDates();
 		if(dates.size()<1){
-			System.out.println("Not sufficient entries in dates file");
+			LoggerUtil.getLogger().info("Not sufficient entries in dates file");
 			System.exit(1);
 		}
 		String lastentry = dates.get(dates.size()-1);
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 		Calendar today = Calendar.getInstance();
 		if(!(sdf.format(today.getTime()).equals(lastentry)) ){
-			System.out.println("Market should be closed today");
+			LoggerUtil.getLogger().info("Market should be closed today");
 			System.exit(1);
 		}
 
@@ -45,11 +47,14 @@ public class StockExit {
 			executorService.execute(new ExitWorker(records.get(i),i));
 		}
 		executorService.shutdown();
-		try {
-			boolean result = executorService.awaitTermination(7, TimeUnit.HOURS);
-			System.out.println("Executor service result - " + result);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+		boolean result = false;
+		while(result==false){
+			try {
+				result = executorService.awaitTermination(7, TimeUnit.HOURS);
+				LoggerUtil.getLogger().info("Executor service result - " + result);
+			} catch (InterruptedException e) {
+				LoggerUtil.getLogger().log(Level.SEVERE, "StockExit Executor failed", e);
+			}
 		}
 	}
 	
@@ -70,18 +75,15 @@ public class StockExit {
 				String date = line.trim();
 				dates.add(date);
 			}
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			LoggerUtil.getLogger().log(Level.SEVERE, "Stock Exit reading of dates failed", e);
+			System.exit(1);
 		}finally{
 			 try {
 				br.close();
 				is.close();
 				
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			} catch (IOException e) {}
 		}
 		return dates;
 	}

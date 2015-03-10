@@ -1,9 +1,12 @@
 package com.stockexit.util;
 
+import java.util.logging.Level;
+
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.service.ServiceRegistry;
 import org.hibernate.service.ServiceRegistryBuilder;
+
 
 public class HibernateUtil {
 	
@@ -17,7 +20,7 @@ public class HibernateUtil {
 		try {
 			sessionFactory = conf.buildSessionFactory(serviceRegistry);
 		} catch (Exception e) {
-			System.err.println("Initial SessionFactory creation failed." + e);
+			LoggerUtil.getLogger().log(Level.SEVERE, "Initial SessionFactory creation failed.", e);
 			throw new ExceptionInInitializerError(e);
 		}		
 	}

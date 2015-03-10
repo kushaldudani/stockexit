@@ -11,6 +11,7 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 
+import com.stockexit.util.LoggerUtil;
 import com.stockexit.util.StockExitUtil;
 
 public class MCDownloader {
@@ -32,10 +33,10 @@ public class MCDownloader {
 		String high = null; String lasttime = null;
 		String u = symbolMap.get(buysell.getSymbol().split("-")[0]);
 		if(u == null){
-			System.out.println("Mapping not present for - " + buysell.getSymbol());
+			LoggerUtil.getLogger().info("StockExit Mapping not present for - " + buysell.getSymbol());
 		}
 		String url = baseUrl + (u.split(" "))[1];
-		System.out.println(url);
+		LoggerUtil.getLogger().info(url);
 		InputStreamReader inputStreamReader = null;
 		BufferedReader bufferedReader = null;
 		try{
@@ -80,26 +81,22 @@ public class MCDownloader {
 				}
 				
 			}else{
-				System.out.println("Data fetch failed for " + u);
+				LoggerUtil.getLogger().info("Data fetch failed for " + u);
 				return null;
 			}
 		}catch(Exception e){
-			System.out.println("Data fetch failed for " + u);
+			LoggerUtil.getLogger().info("Data fetch failed for " + u);
 			return null;
 		}finally{
 			if(bufferedReader != null){
 				try {
 					bufferedReader.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+				} catch (IOException e) {}
 			}
 			if(inputStreamReader != null){
 				try {
 					inputStreamReader.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+				} catch (IOException e) {}
 			}
 		}
 		return price+"/"+low+"/"+high+"/"+lasttime;

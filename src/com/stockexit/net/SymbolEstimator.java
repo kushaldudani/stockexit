@@ -1,6 +1,9 @@
 package com.stockexit.net;
 
 import java.util.List;
+import java.util.logging.Level;
+
+import com.stockexit.util.LoggerUtil;
 
 public class SymbolEstimator {
 	
@@ -54,7 +57,7 @@ public class SymbolEstimator {
 			db.closeSession();
 			return true;
 		}catch(Exception e){
-			e.printStackTrace();
+			LoggerUtil.getLogger().log(Level.SEVERE, "In SymbolEstimator SellStock failed", e);
 		}
 		return false;
 	}

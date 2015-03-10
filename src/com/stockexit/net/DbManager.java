@@ -10,6 +10,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
 import com.stockexit.util.HibernateUtil;
+import com.stockexit.util.LoggerUtil;
 
 
 public class DbManager {
@@ -23,7 +24,8 @@ private Session session;
 			SessionFactory sessionFactory = HibernateUtil.getSessionFactory();  
 			session = sessionFactory.openSession();
 		}catch(Exception e){
-			e.printStackTrace();
+			LoggerUtil.getLogger().log(Level.SEVERE, "StockExit DbManager opensession failed", e);
+			System.exit(1);
 		}
 	}
 	
@@ -35,8 +37,8 @@ private Session session;
 			session.saveOrUpdate(buysell);
 			session.getTransaction().commit();
 		}catch(Exception e){
-			e.printStackTrace();
 			session.getTransaction().rollback();
+			LoggerUtil.getLogger().log(Level.SEVERE, "StockExit DbManager insertorupdate failed", e);
 		}
 	}
 	
@@ -56,8 +58,9 @@ private Session session;
 	    
 		session.getTransaction().commit();
 		}catch(Exception e){
-			e.printStackTrace();
 			session.getTransaction().rollback();
+			LoggerUtil.getLogger().log(Level.SEVERE, "StockExit DbManager getBuySells failed", e);
+			System.exit(1);
 			return null;
 		}
 		return records;
@@ -68,7 +71,7 @@ private Session session;
 		try{
 			session.close();
 		}catch(Exception e){
-			e.printStackTrace();
+			LoggerUtil.getLogger().log(Level.SEVERE, "StockExit DbManager closesession failed", e);
 		}
 	}
 
