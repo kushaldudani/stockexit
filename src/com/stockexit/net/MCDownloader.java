@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Map;
+import java.util.logging.Level;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -21,7 +22,7 @@ public class MCDownloader {
 	private Map<String,String> symbolMap;
 	
 	public MCDownloader() {
-		RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(10*1000).setConnectTimeout(10*1000).build();
+		RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(30*1000).setConnectTimeout(30*1000).build();
 		client = HttpClientBuilder.create().setDefaultRequestConfig(requestConfig).build();
 		symbolMap = StockExitUtil.buildSymbolMap();
 	}
@@ -85,7 +86,7 @@ public class MCDownloader {
 				return null;
 			}
 		}catch(Exception e){
-			LoggerUtil.getLogger().info("Data fetch failed for " + u);
+			LoggerUtil.getLogger().log(Level.SEVERE,"Data fetch exception for " + u,e);
 			return null;
 		}finally{
 			if(bufferedReader != null){

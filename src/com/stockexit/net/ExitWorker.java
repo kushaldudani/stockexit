@@ -25,7 +25,7 @@ public class ExitWorker implements Runnable {
 	@Override
 	public void run() {
 		MCDownloader downloader = new MCDownloader();
-		SymbolEstimator estimator = new SymbolEstimator();
+		SymbolEstimator estimator = new SymbolEstimator(buysell);
 		boolean sold = false;
 		intitialwait();
 		while(true){
@@ -41,15 +41,14 @@ public class ExitWorker implements Runnable {
 				continue;
 			}
 			prices.add(price);
-			LoggerUtil.getLogger().info("Thread - " + buysell.getSymbol() + " trying at " + lasttime);
 			if(lasttime.compareTo("09:15") >= 0 && lasttime.compareTo("15:15") <= 0){
-				sold = estimator.exitMidday(buysell,prices,low,high,lasttime);
+				sold = estimator.exitMidday(prices,low,high,lasttime);
 			}
 			
 			if(sold){
 				break;
 			}else if(lasttime.compareTo("15:15") > 0){
-				estimator.exitAtEnd(buysell,prices,low,high,lasttime);
+				estimator.exitAtEnd(prices,low,high,lasttime);
 				break;
 			}else{
 				intervalwait();

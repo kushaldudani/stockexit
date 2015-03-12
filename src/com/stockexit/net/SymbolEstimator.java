@@ -7,24 +7,36 @@ import com.stockexit.util.LoggerUtil;
 
 public class SymbolEstimator {
 	
-	private int steak10count = 0;
+	private BuySell buysell;
+	private double middayprofitthreshold;
+	private double middaylossthreshold;
+	private double enddayprofitthreshold;
+	private double enddaylossthreshhold;
 	
-	public boolean exitMidday(BuySell buysell,List<Double> prices, double low, double high, 
+	public SymbolEstimator(BuySell buysell) {
+		this.buysell = buysell;
+		this.middayprofitthreshold = getmiddayprofitthreshold();
+		this.middaylossthreshold = getmiddaylossthreshold();
+		this.enddayprofitthreshold = getenddayprofitthreshold();
+		this.enddaylossthreshhold = getenddaylossthreshold();
+	}
+	
+	public boolean exitMidday(List<Double> prices, double low, double high, 
 			String lasttime){
 		
 		double curprice = prices.get(prices.size()-1);
 		double enterprice = buysell.getEnterprice();
 		double curprofit = ((curprice-enterprice)/(enterprice))*100;
+		LoggerUtil.getLogger().info("Thread - " + buysell.getSymbol() + "  " + lasttime+"  " +curprofit);
+		if(curprofit > middayprofitthreshold){
+			middayprofitthreshold = curprofit;
+		}
+		if((middayprofitthreshold-curprofit) >= 0.2){
+			return sellStock(curprice, curprofit);
+		}
 		
-		if(curprofit >= 2){
-			return sellStock(curprice, curprofit, buysell);
-		}
-		int steak = getCurrentSteak(prices);
-		if(steak >= 10){
-			steak10count++;
-		}
-		if(steak10count >= 2){
-			return sellStock(curprice, curprofit, buysell);
+		if(curprofit < middaylossthreshold){
+			return sellStock(curprice, curprofit);
 		}
 		
 		return false;
@@ -32,29 +44,46 @@ public class SymbolEstimator {
 	
 	
 
-	public boolean exitAtEnd(BuySell buysell,List<Double> prices, double low, double high, 
+	public void exitAtEnd(List<Double> prices, double low, double high, 
 			String lasttime){
 		double curprice = prices.get(prices.size()-1);
 		double enterprice = buysell.getEnterprice();
 		double curprofit = ((curprice-enterprice)/(enterprice))*100;
-		
-		if(curprofit >= 1 || curprofit <= 2.5){
-			return sellStock(curprice, curprofit, buysell);
+		LoggerUtil.getLogger().info("Thread - " + buysell.getSymbol() + "  " + lasttime+"  " +curprofit);
+		if(curprofit >= enddayprofitthreshold || curprofit <= enddaylossthreshhold){
+			sellStock(curprice, curprofit);
+		}else{
+			updateStock();
 		}
-		
-		return false;
 	}
-	
-	
-	private boolean sellStock(double curprice, double curprofit, BuySell buysell) {
+	//need to add retry in both
+	private boolean updateStock(){
 		try{
-			buysell.setExited(true);
-			buysell.setExitprice(curprice);
-			buysell.setProfit(curprofit);
+			int daystried = buysell.getDaystried() + 1;
+			buysell.setDaystried(daystried);
 			DbManager db = new DbManager();
 			db.openSession();
 			db.insertOrUpdate(buysell);
 			db.closeSession();
+			LoggerUtil.getLogger().info("Updated - " + buysell.getSymbol() );
+			return true;
+		}catch(Exception e){
+			LoggerUtil.getLogger().log(Level.SEVERE, "In SymbolEstimator UpdateStock failed", e);
+		}
+		return false;
+	}
+	private boolean sellStock(double curprice, double curprofit) {
+		try{
+			buysell.setExited(true);
+			buysell.setExitprice(curprice);
+			buysell.setProfit(curprofit);
+			int daystried = buysell.getDaystried() + 1;
+			buysell.setDaystried(daystried);
+			DbManager db = new DbManager();
+			db.openSession();
+			db.insertOrUpdate(buysell);
+			db.closeSession();
+			LoggerUtil.getLogger().info("Sold - " + buysell.getSymbol() );
 			return true;
 		}catch(Exception e){
 			LoggerUtil.getLogger().log(Level.SEVERE, "In SymbolEstimator SellStock failed", e);
@@ -63,7 +92,7 @@ public class SymbolEstimator {
 	}
 	
 	
-	private int getCurrentSteak(List<Double> prices){
+	/*private int getCurrentSteak(List<Double> prices){
 		int steak=0;
 		for(int i=1;i<prices.size();i++){
 			double curvalue = prices.get(i);
@@ -76,6 +105,49 @@ public class SymbolEstimator {
 		}
 		
 		return steak;
+	}*/
+	
+	private double getmiddayprofitthreshold(){
+		int daystring = buysell.getDaystried()+1;
+		double startvalue = 1.8;
+		if(daystring == 2){
+			startvalue = (startvalue * 0.75);
+		}else if(daystring == 3){
+			startvalue = (startvalue * 0.5);
+		}else{
+			startvalue = (startvalue * 0.35);
+		}
+		return startvalue;
+	}
+	
+	private double getmiddaylossthreshold(){
+		return -3.0;
+	}
+
+	private double getenddayprofitthreshold(){
+		int daystring = buysell.getDaystried()+1;
+		double startvalue = 0.8;
+		if(daystring == 2){
+			startvalue = (startvalue * 0.75);
+		}else if(daystring == 3){
+			startvalue = (startvalue * 0.4);
+		}else{
+			startvalue = 0;
+		}
+		return startvalue;
+	}
+	
+	private double getenddaylossthreshold(){
+		int daystring = buysell.getDaystried()+1;
+		double startvalue = -2.4;
+		if(daystring == 2){
+			startvalue = (startvalue * 0.9);
+		}else if(daystring == 3){
+			startvalue = (startvalue * 0.4);
+		}else{
+			startvalue = (startvalue * 0.25);
+		}
+		return startvalue;
 	}
 
 }
