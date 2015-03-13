@@ -12,6 +12,7 @@ public class SymbolEstimator {
 	private double middaylossthreshold;
 	private double enddayprofitthreshold;
 	private double enddaylossthreshhold;
+	private boolean crossedmpt=false;
 	
 	public SymbolEstimator(BuySell buysell) {
 		this.buysell = buysell;
@@ -30,8 +31,8 @@ public class SymbolEstimator {
 		LoggerUtil.getLogger().info("Thread - " + buysell.getSymbol() + "  " + lasttime+"  " +curprofit);
 		if(curprofit > middayprofitthreshold){
 			middayprofitthreshold = curprofit;
-		}
-		if((middayprofitthreshold-curprofit) >= 0.2){
+			crossedmpt = true;
+		}else if(crossedmpt && ((middayprofitthreshold-curprofit) >= 0.2)){
 			return sellStock(curprice, curprofit);
 		}
 		
@@ -92,20 +93,6 @@ public class SymbolEstimator {
 	}
 	
 	
-	/*private int getCurrentSteak(List<Double> prices){
-		int steak=0;
-		for(int i=1;i<prices.size();i++){
-			double curvalue = prices.get(i);
-			double prevvalue = prices.get(i-1);
-			if(curvalue > prevvalue){
-				steak++;
-			}else if(curvalue < prevvalue){
-				steak--;
-			}
-		}
-		
-		return steak;
-	}*/
 	
 	private double getmiddayprofitthreshold(){
 		int daystring = buysell.getDaystried()+1;
