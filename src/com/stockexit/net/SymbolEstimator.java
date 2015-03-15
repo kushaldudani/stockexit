@@ -65,27 +65,28 @@ public class SymbolEstimator {
 		double curprice = prices.get(prices.size()-1);
 		double enterprice = buysell.getEnterprice();
 		double curprofit = ((curprice-enterprice)/(enterprice))*100;
-		LoggerUtil.getLogger().info("Thread - " + buysell.getSymbol() + "  " + lasttime+"  " +curprofit);
+		LoggerUtil.getLogger().info(buysell.getSymbol() + "  " + lasttime+"  " +curprofit);
+		int size = prices.size();
 		
 		if(curprofit >= 0){
 			return sellStock(curprice, curprofit);
-		}else if(prices.size()>=3 && 
-				getAverage(prices, prices.size()-3, prices.size()) < lossthreshold){
-			return sellStock(curprice, curprofit);
+		}else if(size>=3){ 
+			double price1 = prices.get(size-1);
+			double price2 = prices.get(size-2);
+			double price3 = prices.get(size-3);
+			double loss1 = ((price1-enterprice)/(enterprice))*100;
+			double loss2 = ((price2-enterprice)/(enterprice))*100;
+			double loss3 = ((price3-enterprice)/(enterprice))*100;
+			LoggerUtil.getLogger().info(buysell.getSymbol()+ "  "+ loss1+"  "+loss2+"  "+loss3);
+			if(loss1 < lossthreshold && 
+					loss2 < lossthreshold && loss3 < lossthreshold){
+				return sellStock(price1, loss1);
+			}
 		}
 		
 		return false;
 	}
 	
-	
-	private double getAverage(List<Double> prices, int start, int end){
-		double avg = 0.0;
-		for(int i=start;i<end;i++){
-			avg = avg + prices.get(i);
-		}
-		avg = avg/((double)(end-start));
-		return avg;
-	}
 	
 	//need to add retry in both
 	public void updateStock(){
