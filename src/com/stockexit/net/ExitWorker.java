@@ -41,16 +41,18 @@ public class ExitWorker implements Runnable {
 				continue;
 			}
 			prices.add(price);
-			if(lasttime.compareTo("09:15") >= 0 && lasttime.compareTo("15:15") <= 0){
-				sold = estimator.exitMidday(prices,low,high,lasttime);
+			if(lasttime.compareTo("15:23") >= 0 && lasttime.compareTo("15:28") <= 0){
+				sold = estimator.exitAtEnd(prices,low,high,lasttime);
 			}
 			
 			if(sold){
 				break;
-			}else if(lasttime.compareTo("15:15") > 0){
-				estimator.exitAtEnd(prices,low,high,lasttime);
+			}
+			else if(lasttime.compareTo("15:28") > 0){
+				estimator.updateStock();
 				break;
-			}else{
+			}
+			else{
 				intervalwait();
 			}
 		}
@@ -72,7 +74,7 @@ public class ExitWorker implements Runnable {
 	
 	private void intervalwait() {
 		long timestamp = System.currentTimeMillis();
-		int timetowait = (300*1000);
+		int timetowait = (60*1000);
 		while(System.currentTimeMillis() < (timestamp+timetowait)){
 			try {
 				Thread.sleep(timetowait-System.currentTimeMillis()+timestamp);

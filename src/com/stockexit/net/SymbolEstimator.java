@@ -8,32 +8,47 @@ import com.stockexit.util.LoggerUtil;
 public class SymbolEstimator {
 	
 	private BuySell buysell;
-	private double middayprofitthreshold;
-	private double middaylossthreshold;
-	private double enddayprofitthreshold;
-	private double enddaylossthreshhold;
-	private boolean crossedmpt=false;
+	//private double middayprofitthreshold;
+	//private double middaylossthreshold;
+	//private double enddayprofitthreshold;
+	//private double enddaylossthreshhold;
+	//private int crossedmpt=-1;
+	//private double finalthreshold;
+	private double lossthreshold;
 	
 	public SymbolEstimator(BuySell buysell) {
 		this.buysell = buysell;
-		this.middayprofitthreshold = getmiddayprofitthreshold();
-		this.middaylossthreshold = getmiddaylossthreshold();
-		this.enddayprofitthreshold = getenddayprofitthreshold();
-		this.enddaylossthreshhold = getenddaylossthreshold();
+		this.lossthreshold = getlossthreshold();
+		//this.middaylossthreshold = getmiddaylossthreshold();
+		//this.enddayprofitthreshold = getenddayprofitthreshold();
+		//this.enddaylossthreshhold = getenddaylossthreshold();
+		//this.finalthreshold = getfinalhreshold();
 	}
 	
-	public boolean exitMidday(List<Double> prices, double low, double high, 
+	/*public boolean exitMidday(List<Double> prices, double low, double high, 
 			String lasttime){
 		
 		double curprice = prices.get(prices.size()-1);
 		double enterprice = buysell.getEnterprice();
 		double curprofit = ((curprice-enterprice)/(enterprice))*100;
-		LoggerUtil.getLogger().info("Thread - " + buysell.getSymbol() + "  " + lasttime+"  " +curprofit);
-		if(curprofit > middayprofitthreshold){
-			middayprofitthreshold = curprofit;
-			crossedmpt = true;
-		}else if(crossedmpt && ((middayprofitthreshold-curprofit) >= 0.2)){
+		LoggerUtil.getLogger().info(buysell.getSymbol() + "  " + lasttime+"  " +curprofit+"  "+
+		crossedmpt + "  " + middayprofitthreshold);
+		if(curprofit >= finalthreshold){
 			return sellStock(curprice, curprofit);
+		}
+		
+		if(curprofit >= middayprofitthreshold){
+			middayprofitthreshold = curprofit;
+			crossedmpt = 0;
+		}else if((crossedmpt>=0)) {
+			if((middayprofitthreshold-curprofit) >= (0.2*(crossedmpt+1)) ){
+				crossedmpt++;
+				if(crossedmpt>=2){
+					return sellStock(curprice, curprofit);
+				}
+			}else{
+				crossedmpt = 0;
+			}
 		}
 		
 		if(curprofit < middaylossthreshold){
@@ -41,24 +56,39 @@ public class SymbolEstimator {
 		}
 		
 		return false;
-	}
+	}*/
 	
 	
 
-	public void exitAtEnd(List<Double> prices, double low, double high, 
+	public boolean exitAtEnd(List<Double> prices, double low, double high, 
 			String lasttime){
 		double curprice = prices.get(prices.size()-1);
 		double enterprice = buysell.getEnterprice();
 		double curprofit = ((curprice-enterprice)/(enterprice))*100;
 		LoggerUtil.getLogger().info("Thread - " + buysell.getSymbol() + "  " + lasttime+"  " +curprofit);
-		if(curprofit >= enddayprofitthreshold || curprofit <= enddaylossthreshhold){
-			sellStock(curprice, curprofit);
-		}else{
-			updateStock();
+		
+		if(curprofit >= 0){
+			return sellStock(curprice, curprofit);
+		}else if(prices.size()>=3 && 
+				getAverage(prices, prices.size()-3, prices.size()) < lossthreshold){
+			return sellStock(curprice, curprofit);
 		}
+		
+		return false;
 	}
+	
+	
+	private double getAverage(List<Double> prices, int start, int end){
+		double avg = 0.0;
+		for(int i=start;i<end;i++){
+			avg = avg + prices.get(i);
+		}
+		avg = avg/((double)(end-start));
+		return avg;
+	}
+	
 	//need to add retry in both
-	private boolean updateStock(){
+	public void updateStock(){
 		try{
 			int daystried = buysell.getDaystried() + 1;
 			buysell.setDaystried(daystried);
@@ -67,11 +97,9 @@ public class SymbolEstimator {
 			db.insertOrUpdate(buysell);
 			db.closeSession();
 			LoggerUtil.getLogger().info("Updated - " + buysell.getSymbol() );
-			return true;
 		}catch(Exception e){
 			LoggerUtil.getLogger().log(Level.SEVERE, "In SymbolEstimator UpdateStock failed", e);
 		}
-		return false;
 	}
 	private boolean sellStock(double curprice, double curprofit) {
 		try{
@@ -93,22 +121,56 @@ public class SymbolEstimator {
 	}
 	
 	
-	
-	private double getmiddayprofitthreshold(){
+	private double getlossthreshold(){
 		int daystring = buysell.getDaystried()+1;
-		double startvalue = 1.8;
+		double lossthreshold;
+		if(daystring == 1){
+			lossthreshold = -4;
+		}else if(daystring == 2 || daystring == 3){
+			lossthreshold = -2.5;
+		}else{
+			lossthreshold = -1;
+		}
+		return lossthreshold;
+	}
+	
+	/*private double getfinalhreshold(){
+		int daystring = buysell.getDaystried()+1;
+		double startvalue = 2.2;
 		if(daystring == 2){
 			startvalue = (startvalue * 0.75);
 		}else if(daystring == 3){
 			startvalue = (startvalue * 0.5);
-		}else{
+		}else if(daystring > 3){
+			startvalue = (startvalue * 0.35);
+		}
+		return startvalue;
+	}
+	
+	private double getmiddayprofitthreshold(){
+		int daystring = buysell.getDaystried()+1;
+		double startvalue = 1.7;
+		if(daystring == 2){
+			startvalue = (startvalue * 0.75);
+		}else if(daystring == 3){
+			startvalue = (startvalue * 0.5);
+		}else if(daystring > 3){
 			startvalue = (startvalue * 0.35);
 		}
 		return startvalue;
 	}
 	
 	private double getmiddaylossthreshold(){
-		return -3.0;
+		int daystring = buysell.getDaystried()+1;
+		double startvalue = -3.0;
+		if(daystring == 2){
+			startvalue = (startvalue * 0.9);
+		}else if(daystring == 3){
+			startvalue = (startvalue * 0.7);
+		}else if(daystring > 3){
+			startvalue = (startvalue * 0.5);
+		}
+		return startvalue;
 	}
 
 	private double getenddayprofitthreshold(){
@@ -118,7 +180,7 @@ public class SymbolEstimator {
 			startvalue = (startvalue * 0.75);
 		}else if(daystring == 3){
 			startvalue = (startvalue * 0.4);
-		}else{
+		}else if(daystring > 3){
 			startvalue = 0;
 		}
 		return startvalue;
@@ -131,10 +193,10 @@ public class SymbolEstimator {
 			startvalue = (startvalue * 0.9);
 		}else if(daystring == 3){
 			startvalue = (startvalue * 0.4);
-		}else{
+		}else if(daystring > 3){
 			startvalue = (startvalue * 0.25);
 		}
 		return startvalue;
-	}
+	}*/
 
 }
