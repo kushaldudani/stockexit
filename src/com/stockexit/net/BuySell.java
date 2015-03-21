@@ -38,6 +38,9 @@ public class BuySell implements Serializable {
     
     @Column(name = "Daystried")
     private int daystried;
+    
+    @Column(name = "Expiry")
+    private String expiry;
 
    	
 	/**
@@ -149,6 +152,22 @@ public class BuySell implements Serializable {
 	 */
 	public void setDaystried(int daystried) {
 		this.daystried = daystried;
+	}
+
+
+	/**
+	 * @return the expiry
+	 */
+	public String getExpiry() {
+		return expiry;
+	}
+
+
+	/**
+	 * @param expiry the expiry to set
+	 */
+	public void setExpiry(String expiry) {
+		this.expiry = expiry;
 	}
 
 

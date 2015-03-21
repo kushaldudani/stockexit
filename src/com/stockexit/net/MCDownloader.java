@@ -15,7 +15,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import com.stockexit.util.LoggerUtil;
 import com.stockexit.util.StockExitUtil;
 
-public class MCDownloader {
+public class MCDownloader implements MCInterface {
 	
 	private static final String baseUrl = "http://www.moneycontrol.com/mccode/common/get_pricechart_div.php?nse_id=Y&sc_id=";
 	private HttpClient client;
@@ -27,7 +27,7 @@ public class MCDownloader {
 		symbolMap = StockExitUtil.buildSymbolMap();
 	}
 
-	
+	@Override
 	public String downloadData(BuySell buysell){
 		String price = null;
 		String low = null;

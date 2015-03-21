@@ -44,7 +44,7 @@ public class StockExit {
 		
 		ExecutorService executorService = Executors.newFixedThreadPool(records.size());
 		for(int i=0;i<records.size();i++){
-			executorService.execute(new ExitWorker(records.get(i),i));
+			executorService.execute(new ExitWorker(records.get(i),i, lastentry));
 		}
 		executorService.shutdown();
 		boolean result = false;

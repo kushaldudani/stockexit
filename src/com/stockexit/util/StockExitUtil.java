@@ -11,8 +11,10 @@ import java.util.logging.Level;
 
 public class StockExitUtil {
 	
+	public static boolean runFuture = true;
 	
-private static Map<String,String> symbolmap = null;
+	
+	private static Map<String,String> symbolmap = null;
 	
 	public static synchronized Map<String,String> buildSymbolMap(){
 		if(symbolmap != null){

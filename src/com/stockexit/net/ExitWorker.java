@@ -1,9 +1,11 @@
 package com.stockexit.net;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import com.stockexit.util.LoggerUtil;
+import com.stockexit.util.StockExitUtil;
 
 
 
@@ -13,26 +15,36 @@ public class ExitWorker implements Runnable {
 	
 	private BuySell buysell;
 	private int id;
+	private String curdate;
 	private List<Double> prices;
 	
-	public ExitWorker(BuySell buysell, int id){
+	public ExitWorker(BuySell buysell, int id, String curdate){
 		this.buysell = buysell;
 		this.id = id;
+		this.curdate = curdate;
 		prices = new ArrayList<Double>();
 	}
 	
 
 	@Override
 	public void run() {
-		MCDownloader downloader = new MCDownloader();
-		SymbolEstimator estimator = new SymbolEstimator(buysell);
+		MCInterface downloader;
+		if(StockExitUtil.runFuture){
+			downloader = new FutureMC();
+		}else{
+			downloader = new MCDownloader();
+		}
+		SymbolEstimator estimator = new SymbolEstimator(buysell, curdate);
 		boolean sold = false;
 		intitialwait();
 		while(true){
 			String info = downloader.downloadData(buysell);
 			String lasttime; double high; double low; double price;
 			try{
-				lasttime = info.split("/")[3];
+				Calendar cal = Calendar.getInstance();
+				String hour = String.format("%02d",cal.get(Calendar.HOUR_OF_DAY));
+				String minute = String.format("%02d",cal.get(Calendar.MINUTE));
+				lasttime = hour+":"+minute;
 				high = Double.parseDouble(info.split("/")[2]);
 				low = Double.parseDouble(info.split("/")[1]);
 				price = Double.parseDouble(info.split("/")[0]);
@@ -41,7 +53,9 @@ public class ExitWorker implements Runnable {
 				continue;
 			}
 			prices.add(price);
-			if(lasttime.compareTo("15:23") >= 0 && lasttime.compareTo("15:28") <= 0){
+			if(lasttime.compareTo("09:35") >= 0 && lasttime.compareTo("15:22") < 0){
+				sold = estimator.exitAtMidday(prices,low,high,lasttime);
+			}else if(lasttime.compareTo("15:22") >= 0 && lasttime.compareTo("15:28") <= 0){
 				sold = estimator.exitAtEnd(prices,low,high,lasttime);
 			}
 			
@@ -74,7 +88,7 @@ public class ExitWorker implements Runnable {
 	
 	private void intervalwait() {
 		long timestamp = System.currentTimeMillis();
-		int timetowait = (60*1000);
+		int timetowait = (300*1000);
 		while(System.currentTimeMillis() < (timestamp+timetowait)){
 			try {
 				Thread.sleep(timetowait-System.currentTimeMillis()+timestamp);
