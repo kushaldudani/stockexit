@@ -129,9 +129,9 @@ public class SymbolEstimator {
 		if(daystring == 1){
 			stothreshold = -11;
 		}else if(daystring == 2 || daystring == 3){
-			stothreshold = -7;
+			stothreshold = -8;
 		}else{
-			stothreshold = -7;
+			stothreshold = -8;
 		}
 		return stothreshold;
 	}
