@@ -68,7 +68,9 @@ public class SymbolEstimator {
 					loss2 < lossthreshold && loss3 < lossthreshold){
 				return sellStock(price1, loss1, "Endday");
 			}
-		}else if(curdate.equals(buysell.getExpiry())){
+		}
+		
+		if(curdate.equals(buysell.getExpiry())){
 			return sellStock(curprice, curprofit, "Endday");
 		}
 		

@@ -28,11 +28,11 @@ public class ExitWorker implements Runnable {
 
 	@Override
 	public void run() {
-		MCInterface downloader;
+		FutureMC downloader = null;
 		if(StockExitUtil.runFuture){
 			downloader = new FutureMC();
 		}else{
-			downloader = new MCDownloader();
+			System.exit(1);
 		}
 		SymbolEstimator estimator = new SymbolEstimator(buysell, curdate);
 		boolean sold = false;
@@ -49,7 +49,7 @@ public class ExitWorker implements Runnable {
 				low = Double.parseDouble(info.split("/")[1]);
 				price = Double.parseDouble(info.split("/")[0]);
 			}catch(Exception e){
-				LoggerUtil.getLogger().info("***************MoneyControl did not give valid result*************"+"Thread - " + buysell.getSymbol());
+				LoggerUtil.getLogger().info("***************Broadcast did not give valid result*************"+"Thread - " + buysell.getSymbol());
 				continue;
 			}
 			prices.add(price);
@@ -88,7 +88,7 @@ public class ExitWorker implements Runnable {
 	
 	private void intervalwait() {
 		long timestamp = System.currentTimeMillis();
-		int timetowait = (300*1000);
+		int timetowait = (60*1000);
 		while(System.currentTimeMillis() < (timestamp+timetowait)){
 			try {
 				Thread.sleep(timetowait-System.currentTimeMillis()+timestamp);

@@ -41,6 +41,9 @@ public class BuySell implements Serializable {
     
     @Column(name = "Expiry")
     private String expiry;
+    
+    @Column(name = "Type")
+    private String type;
 
    	
 	/**
@@ -168,6 +171,22 @@ public class BuySell implements Serializable {
 	 */
 	public void setExpiry(String expiry) {
 		this.expiry = expiry;
+	}
+
+
+	/**
+	 * @return the type
+	 */
+	public String getType() {
+		return type;
+	}
+
+
+	/**
+	 * @param type the type to set
+	 */
+	public void setType(String type) {
+		this.type = type;
 	}
 
 
