@@ -44,7 +44,9 @@ public class BuySell implements Serializable {
     
     @Column(name = "Type")
     private String type;
-
+    
+    @Column(name = "Closeprice")
+    private double closeprice;
    	
 	/**
 	 * @return the symbol
@@ -187,6 +189,22 @@ public class BuySell implements Serializable {
 	 */
 	public void setType(String type) {
 		this.type = type;
+	}
+
+
+	/**
+	 * @return the closeprice
+	 */
+	public double getCloseprice() {
+		return closeprice;
+	}
+
+
+	/**
+	 * @param closeprice the closeprice to set
+	 */
+	public void setCloseprice(double closeprice) {
+		this.closeprice = closeprice;
 	}
 
 

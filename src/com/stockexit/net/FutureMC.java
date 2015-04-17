@@ -22,7 +22,11 @@ public class FutureMC  {
 		int size = tickdatas.size();
 		double price=0; double high=0; double low=0;
 		TickData td = tickdatas.get(size-1);
-		price = td.getLastprice();
+		if(buysell.getType().equals("Long")){
+			price = td.getBidprice();
+		}else{
+			price = td.getAskprice();
+		}
 		high = td.getHigh();
 		low = td.getLow();
 		
