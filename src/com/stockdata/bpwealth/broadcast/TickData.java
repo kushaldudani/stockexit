@@ -1,49 +1,39 @@
 
-package com.stockexit.net;
-
-import java.io.Serializable;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
-
-@Entity
-@Table(name = "TickData")
-public class TickData implements Serializable {
+package com.stockdata.bpwealth.broadcast;
 
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 4193595031950155741L;
 
-	@Id
-	@Column(name = "Symbol")
+
+public class TickData  {
+
+
+	
+
+	
     private String symbol;
     
-	@Column(name = "Bidprice")
+	
     private double bidprice;
     
-    @Column(name = "High")
+    
     private double high;
 	
-    @Column(name = "Low")
+    
     private double low;
     
-    @Column(name = "Bidqty")
+    
     private double bidqty;
     
-    @Column(name = "Askprice")
+    
     private double askprice;
 	
-    @Column(name = "Askqty")
+    
     private double askqty;
     
-    @Column(name = "Lastprice")
+    
     private double lastprice;
     
-    @Column(name = "Lastqty")
+    
     private double lastqty;
 
    	
@@ -235,6 +225,20 @@ public class TickData implements Serializable {
 
 
 	public TickData() {
+	}
+
+
+
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "TickData [symbol=" + symbol + ", bidprice=" + bidprice
+				+ ", high=" + high + ", low=" + low + ", bidqty=" + bidqty
+				+ ", askprice=" + askprice + ", askqty=" + askqty
+				+ ", lastprice=" + lastprice + ", lastqty=" + lastqty + "]";
 	}
 
 

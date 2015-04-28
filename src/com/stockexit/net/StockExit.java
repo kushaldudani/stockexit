@@ -8,19 +8,21 @@ import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
+import com.stockdata.bpwealth.broadcast.BroadCastManager;
+import com.stockdata.bpwealth.broadcast.TickData;
 import com.stockexit.util.LoggerUtil;
+import com.stockexit.util.SynQueue;
 
 
 public class StockExit {
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		
 		TimeZone.setDefault(TimeZone.getTimeZone("IST"));
 		
@@ -36,26 +38,41 @@ public class StockExit {
 			LoggerUtil.getLogger().info("Market should be closed today");
 			System.exit(1);
 		}
-
+		
 		DbManager db = new DbManager();
 		db.openSession();
 		List<BuySell> records = db.getBusSells();
-		db.closeSession();
-		
-		ExecutorService executorService = Executors.newFixedThreadPool(records.size());
-		for(int i=0;i<records.size();i++){
-			executorService.execute(new ExitWorker(records.get(i),i, lastentry));
+		if(records.size() == 0){
+			LoggerUtil.getLogger().info("No Stocks to exit");
+		    System.exit(1);
 		}
-		executorService.shutdown();
-		boolean result = false;
-		while(result==false){
-			try {
-				result = executorService.awaitTermination(7, TimeUnit.HOURS);
-				LoggerUtil.getLogger().info("Executor service result - " + result);
-			} catch (InterruptedException e) {
-				LoggerUtil.getLogger().log(Level.SEVERE, "StockExit Executor failed", e);
+		
+		for(int ii=1;ii<records.size();ii++){
+			if((records.get(ii).getSymbol().split("-")[0]).
+					equals(records.get(ii-1).getSymbol().split("-")[0])){
+				BuySell prevbs = records.get(ii-1);
+				BuySell curbs = records.get(ii);
+				//prevbs.setDaystried(-1);
+				prevbs.setExited(true);
+				db.insertOrUpdate(prevbs);
+				double newenterprice = (prevbs.getEnterprice()+curbs.getEnterprice())/2;
+				curbs.setEnterprice(newenterprice);
+				db.insertOrUpdate(curbs);
 			}
 		}
+		db.closeSession();
+		
+		Map<String,SynQueue<TickData>> queuemap = new HashMap<String,SynQueue<TickData>>();
+		for(BuySell bsell : records){
+			if(bsell.isExited()==false){
+				String sss = bsell.getSymbol().split("-")[0];
+				SynQueue<TickData> qu = new SynQueue<TickData>();
+				new Thread(new ExitWorker(bsell,qu,lastentry)).start();
+				queuemap.put(sss, qu);
+			}
+		}
+		
+		BroadCastManager.mainrun(queuemap);
 	}
 	
 	
