@@ -10,13 +10,13 @@ public class SymbolEstimator {
 	private BuySell buysell;
 	private String curdate;
 	private double lossthreshold;
-	private double stopthreshold;
+	//private double stopthreshold;
 	
 	public SymbolEstimator(BuySell buysell, String curdate) {
 		this.buysell = buysell;
 		this.curdate = curdate;
 		this.lossthreshold = getlossthreshold();
-		this.stopthreshold = getstopthreshold();
+		//this.stopthreshold = getstopthreshold();
 	}
 	
 	private double getPft(double enterprice, double curprice, String type){
@@ -47,8 +47,8 @@ public class SymbolEstimator {
 			LoggerUtil.getLogger().info(buysell.getSymbol()+ "  "+ profit1+"  trendprofit-"+trendpft);
 			if(profit1 >= targetpft || profit1 >= 1.8){
 				return sellStock(price1, profit1, "Middayday",lasttime);
-			}else if(profit1 < stopthreshold && 
-					profit2 < stopthreshold && profit3 < stopthreshold){
+			}else if(trendpft > 0.25 && profit1 < -0.8
+					&& profit2 < -0.8 && profit3 < -0.8){
 				return sellStock(price1, profit1, "Middayday",lasttime);
 			}
 		}
@@ -61,7 +61,7 @@ public class SymbolEstimator {
 		if(trendpft < -2.5){
 			return -0.8;
 		}else if(trendpft < 0){
-			return 0.5;
+			return 0.25;
 		}else if(trendpft > 1){
 			return (trendpft+0.25);
 		}else {
@@ -170,7 +170,7 @@ public class SymbolEstimator {
 		return lossthreshold;
 	}
 	
-	private double getstopthreshold(){
+	/*private double getstopthreshold(){
 		int daystring = buysell.getDaystried()+1;
 		double stothreshold;
 		if(daystring == 1){
@@ -181,6 +181,6 @@ public class SymbolEstimator {
 			stothreshold = -11;
 		}
 		return stothreshold;
-	}
+	}*/
 
 }

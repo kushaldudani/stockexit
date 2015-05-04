@@ -34,7 +34,7 @@ public class BuySell implements Serializable {
     private boolean exited;
     
     @Column(name = "Hasbudget")
-    private boolean hasbudget;
+    private int hasbudget;
     
     @Column(name = "Daystried")
     private int daystried;
@@ -131,7 +131,7 @@ public class BuySell implements Serializable {
 	/**
 	 * @return the hasbudget
 	 */
-	public boolean isHasbudget() {
+	public int getbudget() {
 		return hasbudget;
 	}
 
@@ -139,7 +139,7 @@ public class BuySell implements Serializable {
 	/**
 	 * @param hasbudget the hasbudget to set
 	 */
-	public void setHasbudget(boolean hasbudget) {
+	public void setHasbudget(int hasbudget) {
 		this.hasbudget = hasbudget;
 	}
 

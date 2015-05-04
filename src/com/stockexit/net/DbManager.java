@@ -47,7 +47,7 @@ private Session session;
 		try{
 		session.beginTransaction();
 		
-		String hql = "Select * from BuySell where Exited = 0 and Hasbudget = 1 order by Symbol asc";
+		String hql = "Select * from BuySell where Exited = 0 and Hasbudget > 0 order by Symbol asc";
 	    SQLQuery query = session.createSQLQuery(hql);
 	    query.addEntity(BuySell.class);
 	    List<Object> objects = query.list();

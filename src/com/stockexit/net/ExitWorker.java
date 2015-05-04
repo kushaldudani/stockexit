@@ -62,22 +62,22 @@ public class ExitWorker implements Runnable {
 					continue;
 				}
 				prices.add(price);
-				if(lasttime.compareTo("10:00") >= 0 && lasttime.compareTo("10:30") < 0){
+				if(lasttime.compareTo("10:00") >= 0 && lasttime.compareTo("10:45") < 0){
 					if(trendprice10 == 0){
 						trendprice10 = estimator.getAvgTrend(prices);
 					}
 					sold = estimator.exitAtMidday(prices,low,high,lasttime,trendprice10);
-				}else if(lasttime.compareTo("11:00") >= 0 && lasttime.compareTo("11:30") < 0){
+				}else if(lasttime.compareTo("11:00") >= 0 && lasttime.compareTo("11:45") < 0){
 					if(trendprice11 == 0){
 						trendprice11 = estimator.getAvgTrend(prices);
 					}
 					sold = estimator.exitAtMidday(prices,low,high,lasttime,trendprice11);
-				}else if(lasttime.compareTo("12:00") >= 0 && lasttime.compareTo("12:30") < 0){
+				}else if(lasttime.compareTo("12:00") >= 0 && lasttime.compareTo("12:45") < 0){
 					if(trendprice12 == 0){
 						trendprice12 = estimator.getAvgTrend(prices);
 					}
 					sold = estimator.exitAtMidday(prices,low,high,lasttime,trendprice12);
-				}else if(lasttime.compareTo("13:00") >= 0 && lasttime.compareTo("13:30") < 0){
+				}else if(lasttime.compareTo("13:00") >= 0 && lasttime.compareTo("13:45") < 0){
 					if(trendprice13 == 0){
 						trendprice13 = estimator.getAvgTrend(prices);
 					}

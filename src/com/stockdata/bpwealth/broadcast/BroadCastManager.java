@@ -75,6 +75,7 @@ public class BroadCastManager{
 	        echoSocket.setReceiveBufferSize(6092);
 	        echoSocket.setSendBufferSize(1024);
 	        echoSocket.setTcpNoDelay(true);
+	        echoSocket.setSoTimeout(30*1000);
 	        
 	        ExecutorService executorService = Executors.newFixedThreadPool(1);
 			executorService.execute(new TickListener(echoSocket,queuemap));
@@ -84,10 +85,11 @@ public class BroadCastManager{
 	        outToServer.write(req.getStruct());
 	        outToServer.flush();
 	        boolean result = false;
-			while(result==false){
+			while(true){
 				try {
 					result = executorService.awaitTermination(7, TimeUnit.HOURS);
 					LoggerUtil.getLogger().info("Broadcast Connection lost - "+result);
+					break;
 				} catch (Exception e) {
 					LoggerUtil.getLogger().log(Level.SEVERE, "Broadcast Connection interrupted", e);
 				}
