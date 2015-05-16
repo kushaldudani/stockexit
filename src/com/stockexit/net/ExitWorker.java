@@ -62,7 +62,9 @@ public class ExitWorker implements Runnable {
 					continue;
 				}
 				prices.add(price);
-				if(lasttime.compareTo("10:00") >= 0 && lasttime.compareTo("10:45") < 0){
+				if(lasttime.compareTo("09:22") >= 0 && lasttime.compareTo("09:45") < 0){
+					sold = estimator.exitAtStart(prices,low,high,lasttime);
+				}else if(lasttime.compareTo("10:00") >= 0 && lasttime.compareTo("10:45") < 0){
 					if(trendprice10 == 0){
 						trendprice10 = estimator.getAvgTrend(prices);
 					}

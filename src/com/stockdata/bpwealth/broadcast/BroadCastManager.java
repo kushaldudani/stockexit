@@ -58,9 +58,11 @@ public class BroadCastManager{
 	
     private String ip;
     private int port;
+    private ExecutorService executorService;
     public BroadCastManager(String ip,int port) throws IOException{
         this.ip = ip;
         this.port = port;
+        executorService = Executors.newFixedThreadPool(1);
     }
  
     private void subscribe(List<Integer> tokens, Map<String,SynQueue<TickData>> queuemap) throws IOException{
@@ -77,13 +79,16 @@ public class BroadCastManager{
 	        echoSocket.setTcpNoDelay(true);
 	        echoSocket.setSoTimeout(30*1000);
 	        
-	        ExecutorService executorService = Executors.newFixedThreadPool(1);
-			executorService.execute(new TickListener(echoSocket,queuemap));
-			executorService.shutdown();
-			
-			DataOutputStream outToServer = new DataOutputStream(echoSocket.getOutputStream());
-	        outToServer.write(req.getStruct());
-	        outToServer.flush();
+	        try{
+	        	DataOutputStream outToServer = new DataOutputStream(echoSocket.getOutputStream());
+	        	outToServer.write(req.getStruct());
+	        	outToServer.flush();
+	        	
+	        	executorService.execute(new TickListener(echoSocket,queuemap));
+	        	executorService.shutdown();
+	        }catch(Exception e){
+	        	LoggerUtil.getLogger().log(Level.SEVERE, "Broadcast cannot request to listen to data", e);
+	        }
 	        boolean result = false;
 			while(true){
 				try {

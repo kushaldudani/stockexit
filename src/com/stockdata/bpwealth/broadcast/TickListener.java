@@ -44,8 +44,16 @@ public class TickListener implements Runnable{
    		 	String minute = String.format("%02d",cal.get(Calendar.MINUTE));
    		 	String lasttime = hour+":"+minute;
             while (lasttime.compareTo("09:15") >= 0 && lasttime.compareTo("15:30") < 0) {
+               cal = Calendar.getInstance();
+       		   hour = String.format("%02d",cal.get(Calendar.HOUR_OF_DAY));
+       		   minute = String.format("%02d",cal.get(Calendar.MINUTE));
+       		   lasttime = hour+":"+minute;
+       		   if((cal.getTimeInMillis()-checklasttime) > 45000){
+       			   LoggerUtil.getLogger().log(Level.SEVERE, "TickListener socket no more listeneing");
+       			   break;
+       		   }
                byte[] fresh = new byte[10240];
-               int size  = dIn.read(fresh);
+               int size  = dIn.read(fresh,0,dIn.available());
                if(size <= 0){ LoggerUtil.getLogger().info("Size read - "+size); continue;}
                baos.write(fresh, 0, size);
                while (baos.size()>index+2) {
@@ -73,14 +81,6 @@ public class TickListener implements Runnable{
                     baos.reset();
                }
                index = 0;
-               cal = Calendar.getInstance();
-      		   hour = String.format("%02d",cal.get(Calendar.HOUR_OF_DAY));
-      		   minute = String.format("%02d",cal.get(Calendar.MINUTE));
-      		   lasttime = hour+":"+minute;
-      		   if((cal.getTimeInMillis()-checklasttime) > 45000){
-      			   LoggerUtil.getLogger().log(Level.SEVERE, "TickListener socket no more listeneing");
-      			   break;
-      		   }
             }    
         } catch (Exception ex) {
             LoggerUtil.getLogger().log(Level.SEVERE, "Error listening to Tick Data", ex);
