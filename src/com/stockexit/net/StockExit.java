@@ -22,7 +22,7 @@ import com.stockexit.util.SynQueue;
 
 public class StockExit {
 	
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args)  {
 		
 		TimeZone.setDefault(TimeZone.getTimeZone("IST"));
 		

@@ -3,7 +3,6 @@ package com.stockdata.bpwealth.broadcast;
 
 
 import java.io.DataOutputStream;
-import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -25,7 +24,7 @@ import com.stockexit.util.SynQueue;
 
 public class BroadCastManager{
 	
-	public static void mainrun(Map<String,SynQueue<TickData>> queuemap) throws IOException {
+	public static void mainrun(Map<String,SynQueue<TickData>> queuemap)  {
 		TimeZone.setDefault(TimeZone.getTimeZone("IST"));
 		
 		/*List<String> dates = readDates();
@@ -59,27 +58,27 @@ public class BroadCastManager{
     private String ip;
     private int port;
     private ExecutorService executorService;
-    public BroadCastManager(String ip,int port) throws IOException{
+    public BroadCastManager(String ip,int port) {
         this.ip = ip;
         this.port = port;
         executorService = Executors.newFixedThreadPool(1);
     }
  
-    private void subscribe(List<Integer> tokens, Map<String,SynQueue<TickData>> queuemap) throws IOException{
+    private void subscribe(List<Integer> tokens, Map<String,SynQueue<TickData>> queuemap) {
     	Calendar cal = Calendar.getInstance(); 
 		String hour = String.format("%02d",cal.get(Calendar.HOUR_OF_DAY));
 		String minute = String.format("%02d",cal.get(Calendar.MINUTE));
 		String lasttime = hour+":"+minute;
     	while(lasttime.compareTo("09:15") >= 0 && lasttime.compareTo("15:30") < 0){
 			MarketDepthRequest req = new MarketDepthRequest(tokens);
-	        
+			try{
 	        Socket echoSocket = new Socket(ip, port);
 	        echoSocket.setReceiveBufferSize(6092);
 	        echoSocket.setSendBufferSize(1024);
 	        echoSocket.setTcpNoDelay(true);
 	        echoSocket.setSoTimeout(30*1000);
 	        
-	        try{
+	        
 	        	DataOutputStream outToServer = new DataOutputStream(echoSocket.getOutputStream());
 	        	outToServer.write(req.getStruct());
 	        	outToServer.flush();
