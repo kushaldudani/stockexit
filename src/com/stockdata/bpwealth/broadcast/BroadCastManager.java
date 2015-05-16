@@ -61,7 +61,6 @@ public class BroadCastManager{
     public BroadCastManager(String ip,int port) {
         this.ip = ip;
         this.port = port;
-        executorService = Executors.newFixedThreadPool(1);
     }
  
     private void subscribe(List<Integer> tokens, Map<String,SynQueue<TickData>> queuemap) {
@@ -82,7 +81,7 @@ public class BroadCastManager{
 	        	DataOutputStream outToServer = new DataOutputStream(echoSocket.getOutputStream());
 	        	outToServer.write(req.getStruct());
 	        	outToServer.flush();
-	        	
+	        	executorService = Executors.newFixedThreadPool(1);
 	        	executorService.execute(new TickListener(echoSocket,queuemap));
 	        	executorService.shutdown();
 	        }catch(Exception e){
