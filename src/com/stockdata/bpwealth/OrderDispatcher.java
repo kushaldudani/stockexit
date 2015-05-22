@@ -61,6 +61,7 @@ public class OrderDispatcher {
         echoSocket.setSendBufferSize(2048);
         echoSocket.setTcpNoDelay(true);
         echoSocket.setKeepAlive(true);
+        echoSocket.setSoTimeout(30*1000);
         reversetokensmap = StockExitUtil.buildReverseTokensMap();
         new Thread(new Listen()).start();
         execService = Executors.newFixedThreadPool(1);
@@ -85,7 +86,7 @@ public class OrderDispatcher {
    
     public TradeConfirmation sendOrder(short requestType,
    		 short side, String token, String symbol,
-   		 int rate, int marketLot, String expiry)  {
+   		 int rate, int marketLot, String expiry, int qty)  {
         try {
             
             //AlgoDB db = new AlgoDB();
@@ -109,8 +110,8 @@ public class OrderDispatcher {
            		 14,30,0);
             ord.ExpiryDate = getNSESeconds(cal.getTimeInMillis());
             
-            ord.quantity = 1;
-            ord.DiscQty = 1;
+            ord.quantity = qty;
+            ord.DiscQty = qty;
             ord.rate = rate;
             
             ord.ProdType = 0;
@@ -420,7 +421,7 @@ public class OrderDispatcher {
                     while((System.currentTimeMillis()-loopstarttime)<60000){
                         
                         byte[] fresh = new byte[10240];
-                        int size  = dIn.read( fresh, 0,dIn.available());
+                        int size  = dIn.read( fresh );
                         if(size<1)continue;
                         baos.write(fresh, 0, size);
                        // System.out.println(baos.size()+"\t"+index);

@@ -62,6 +62,7 @@ public class StockExit {
 						(curbs.getEnterprice()*curbudget))/(totalbudget);
 				curbs.setEnterprice(newenterprice);
 				curbs.setHasbudget(totalbudget);
+				curbs.setDaystried(prevbs.getDaystried());
 				db.insertOrUpdate(curbs);
 			}
 		}

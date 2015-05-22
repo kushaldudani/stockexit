@@ -53,7 +53,7 @@ public class TickListener implements Runnable{
        			   break;
        		   }
                byte[] fresh = new byte[10240];
-               int size  = dIn.read(fresh,0,dIn.available());
+               int size  = dIn.read(fresh);
                if(size <= 0){ LoggerUtil.getLogger().info("Size read - "+size); continue;}
                baos.write(fresh, 0, size);
                while (baos.size()>index+2) {
