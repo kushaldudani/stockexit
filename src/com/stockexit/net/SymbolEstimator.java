@@ -54,10 +54,11 @@ public class SymbolEstimator {
 			double profit2 = getPft(enterprice,price2,buysell.getType());
 			double profit3 = getPft(enterprice,price3,buysell.getType());
 			LoggerUtil.getLogger().info(buysell.getSymbol()+ "  "+ profit1+"  trendprofit-"+trendpft);
-			if(profit1 >= targetpft || profit1 >= 1.8){
+			if(profit1 >= targetpft || profit1 >= 1.7){
 				return sellStock(price1, profit1, "Middayday",lasttime);
-			}else if(trendpft > 1 && profit1 < 0.8
-					&& profit2 < 0.8 && profit3 < 0.8){
+			}else if(trendpft > 1 && profit1 < 0.8 && profit2 < 0.8){
+				return sellStock(price1, profit1, "Middayday",lasttime);
+			}else if(trendpft > 0.5 && profit1 < 0.4 && profit2 < 0.4){
 				return sellStock(price1, profit1, "Middayday",lasttime);
 			}else if(trendpft > 0.25 && profit1 < -0.8
 					&& profit2 < -0.8 && profit3 < -0.8){
@@ -68,11 +69,13 @@ public class SymbolEstimator {
 		return false;
 		//buysell.getDaystried()+1)>=2 && (profit1>-1&&profit1<0.5)
 	}
-	
+	// 2 things has to be done here
+	// these logic is good, only thing is the numbers need to vary depending on past stock volatility
+	// relax the 0.4 number
 	private double getTargetProfit(double trendpft) {
-		if(trendpft < -2){
-			return -0.8;
-		}else if(trendpft < -1){
+		if(trendpft < -1.7){
+			return -0.75;
+		}else if(trendpft < -0.9){
 			return -0.2;
 		}else if(trendpft < 0){
 			return 0.2;
@@ -81,7 +84,7 @@ public class SymbolEstimator {
 		}else if(trendpft > 0.5){
 			return (trendpft+0.25);
 		}else {
-			return (trendpft+0.4);
+			return (trendpft+0.3);
 		}
 	}
 
@@ -104,7 +107,7 @@ public class SymbolEstimator {
 		return trend;
 	}
 	
-
+    // add different profit target depending on the days tried
 	public boolean exitAtEnd(List<Double> prices, double low, double high, 
 			String lasttime){
 		double curprice = prices.get(prices.size()-1);
@@ -113,7 +116,7 @@ public class SymbolEstimator {
 		LoggerUtil.getLogger().info(buysell.getSymbol() + "  " + lasttime+"  " +curprofit);
 		int size = prices.size();
 		
-		if(curprofit >= 0){
+		if(curprofit >= getExitAtEndProfit()){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}else if(size>=3){ 
 			double price1 = prices.get(size-1);
@@ -136,14 +139,34 @@ public class SymbolEstimator {
 		return false;
 	}
 	
+	private double getExitAtEndProfit(){
+		int daystring = buysell.getDaystried()+1;
+		double exitAtEndProfit;
+		if(daystring == 1){
+			exitAtEndProfit = 0;
+		}else if(daystring == 2 ){
+			exitAtEndProfit = -0.2;
+		}else{
+			exitAtEndProfit = -0.5;
+		}
+		return exitAtEndProfit;
+	}
+	
+	private double exitAtStartMax = 0;
+	
 	public boolean exitAtStart(List<Double> prices, double low, double high, 
 			String lasttime){
 		double curprice = prices.get(prices.size()-1);
 		double enterprice = buysell.getEnterprice();
 		double curprofit = getPft(enterprice,curprice,buysell.getType());
 		LoggerUtil.getLogger().info(buysell.getSymbol() + "  " + lasttime+"  " +curprofit);
+		if(curprofit > exitAtStartMax){
+			exitAtStartMax = curprofit;
+		}
 		
 		if(curprofit >= getExitAtStartProfit()){
+			return sellStock(curprice, curprofit, "Startday",lasttime);
+		}else if(exitAtStartMax >= 0.5 && curprofit < 0.5){
 			return sellStock(curprice, curprofit, "Startday",lasttime);
 		}
 		return false;
@@ -153,9 +176,9 @@ public class SymbolEstimator {
 		int daystring = buysell.getDaystried()+1;
 		double exitAtStartProfit;
 		if(daystring == 1){
-			exitAtStartProfit = 1.1;
+			exitAtStartProfit = 1;
 		}else if(daystring == 2 ){
-			exitAtStartProfit = 0.5;
+			exitAtStartProfit = 0.25;
 		}else{
 			exitAtStartProfit = 0;
 		}
@@ -180,7 +203,7 @@ public class SymbolEstimator {
 	private boolean sellStock(double curprice, double curprofit, String ismidday, String lasttime) {
 		try{
 			String ssymb = buysell.getSymbol().split("-")[0];
-			/*OrderDispatcher od = new OrderDispatcher(ssymb);
+			OrderDispatcher od = new OrderDispatcher(ssymb);
 			od.connect();
 			TradeConfirmation trade = null;
 			if(buysell.getType().equals("Long")){
@@ -198,12 +221,13 @@ public class SymbolEstimator {
 					Integer.toString(tokensmap.get(ssymb)), ssymb, limitprice100, 
 					marketlotmap.get(tokensmap.get(ssymb)), buysell.getExpiry(), buysell.getbudget());
 			}
-			if(trade != null){*/
+			if(trade != null){
 				buysell.setExited(true);
-				//double tradedprice = ((double)(trade.TrdPrice)/(double)100);
-				//buysell.setExitprice(tradedprice);
-				buysell.setExitprice(curprice);
-				buysell.setProfit(curprofit);
+				double tradedprice = ((double)(trade.TrdPrice)/(double)100);
+				buysell.setExitprice(tradedprice);
+				//buysell.setExitprice(curprice);
+				//buysell.setProfit(curprofit);
+				buysell.setProfit(getPft(buysell.getEnterprice(), tradedprice, buysell.getType()));
 				int daystried = buysell.getDaystried() + 1;
 				buysell.setDaystried(daystried);
 				String letter = buysell.getType().substring(0, 1);
@@ -213,21 +237,24 @@ public class SymbolEstimator {
 				db.insertOrUpdate(buysell);
 				db.closeSession();
 				LoggerUtil.getLogger().info("Sold - "+ismidday +" - " + buysell.getSymbol() );
-				SendMail.generateAndSendEmail("Successfully squared off - "+ buysell.getSymbol() + 
-						" at price - " + curprice+" please verify");
-			/*}else if(od.getOrderConfirmation() != null){
+				SendMail.generateAndSendEmail("Successfully squared off - "+ buysell.getSymbol() +"  "+buysell.getType() + 
+						" at price - " + tradedprice+" please verify, enterprice - "+buysell.getEnterprice());
+			}else if(od.getOrderConfirmation() != null){
+				updateStock();
 				LoggerUtil.getLogger().info("NotSold but order dispatched- "+ismidday +" - " + buysell.getSymbol() );
 				SendMail.generateAndSendEmail("Tried squaring off - "+ buysell.getSymbol() + 
 						"but did not get trade confirmation. please square off from terminal");
 			}else{
+				updateStock();
 				LoggerUtil.getLogger().info("NotSold connection problem- "+ismidday +" - " + buysell.getSymbol() );
 				SendMail.generateAndSendEmail("Not able to square off - "+ buysell.getSymbol() + 
 						"connection problem. please square off from terminal");
-			}*/
+			}
 			return true;
 		}catch(Exception e){
 			LoggerUtil.getLogger().log(Level.SEVERE, "In SymbolEstimator SellStock failed "+buysell.getSymbol(), e);
 		}
+		updateStock();
 		LoggerUtil.getLogger().info("NotSold connection problem- "+ismidday +" - " + buysell.getSymbol() );
 		SendMail.generateAndSendEmail("Not able to square off - "+ buysell.getSymbol() + 
 				"connection problem. please square off from terminal");
