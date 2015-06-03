@@ -14,7 +14,20 @@ import com.stockexit.util.LoggerUtil;
 
 
 public class LoginRequest extends Request{
-    public String ClientCode;
+    /* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "LoginRequest [ClientCode=" + ClientCode + ", Reserved0="
+				+ Reserved0 + ", ConnType=" + ConnType + ", LocalIP=" + LocalIP
+				+ ", PublicIP=" + PublicIP + ", Reserved1=" + Reserved1
+				+ ", VersionNo=" + VersionNo + ", Reserved2=" + Reserved2
+				+ ", PAN=" + PAN + ", TwoFactor=" + TwoFactor + ", Reserved3="
+				+ Reserved3 + "]";
+	}
+
+	public String ClientCode;
     public String Reserved0="";
     public String Password;
     public short ConnType;

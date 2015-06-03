@@ -72,11 +72,31 @@ public class LoginResponse extends Request {
          
         
     }
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "LoginResponse [Success=" + Success + ", ClientName="
+				+ ClientName + ", TrxPassword=" + TrxPassword
+				+ ", PwdResetByAdmin=" + PwdResetByAdmin + ", ServerDateTime="
+				+ ServerDateTime + ", SegForTrading=" + SegForTrading
+				+ ", SegForViewing=" + SegForViewing + ", MaxScripsInMW="
+				+ MaxScripsInMW + ", LastLogin=" + LastLogin + ", Reserved1="
+				+ Reserved1 + ", LastLoginIP=" + LastLoginIP + ", Reserved2="
+				+ Reserved2 + ", ClientConnIP=" + ClientConnIP
+				+ ", BroadcastIP=" + BroadcastIP + ", InteractivePort="
+				+ InteractivePort + ", BroadcastPort=" + BroadcastPort
+				+ ", ClientType=" + ClientType + ", BrokerID=" + BrokerID
+				+ ", Message=" + Message + ", LastPwdModified="
+				+ LastPwdModified + ", LastTrxModified=" + LastTrxModified
+				+ ", BranchID=" + BranchID + ", Reserved3=" + Reserved3
+				+ ", Reserved4=" + Reserved4 + ", ClientCode=" + ClientCode
+				+ ", Reserved5=" + Reserved5 + "]";
+	}
     
-    @Override
-    public String toString(){
-       return Success+""; 
-    }
+   
     
     
 }

@@ -169,7 +169,7 @@ public class OrderDispatcher {
 		req.PublicIP = "171.77.170.207" ;
 		req.TwoFactor = 1;
 		req.VersionNo = "1.0.0.85";
-        
+		LoggerUtil.getLogger().info(req.toString());
         sendRequest(req.getStruct());
         
         long loopstarttime = System.currentTimeMillis();
@@ -262,6 +262,7 @@ public class OrderDispatcher {
 				LoggerUtil.getLogger().info("Message Type: Login Response");
 				try {
 					LoginResponse response = new LoginResponse(message);
+					LoggerUtil.getLogger().info(response.toString());
 					// try (PrintWriter writer = new PrintWriter(new
 					// BufferedWriter(new FileWriter(APItoStr, true)))) {
 					// writer.println(response.toString());
