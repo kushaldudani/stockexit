@@ -166,7 +166,7 @@ public class SymbolEstimator {
 		
 		if(curprofit >= getExitAtStartProfit()){
 			return sellStock(curprice, curprofit, "Startday",lasttime);
-		}else if(exitAtStartMax >= 0.5 && curprofit < 0.5){
+		}else if(exitAtStartMax >= 0.53 && curprofit < 0.47){
 			return sellStock(curprice, curprofit, "Startday",lasttime);
 		}
 		return false;
@@ -270,11 +270,11 @@ public class SymbolEstimator {
 		int daystring = buysell.getDaystried()+1;
 		double lossthreshold;
 		if(daystring == 1){
-			lossthreshold = -7.5;
+			lossthreshold = -10;
 		}else if(daystring == 2 || daystring == 3){
-			lossthreshold = -7.5;
+			lossthreshold = -10;
 		}else{
-			lossthreshold = -7.5;
+			lossthreshold = -10;
 		}
 		return lossthreshold;
 	}

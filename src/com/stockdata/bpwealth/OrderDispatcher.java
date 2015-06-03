@@ -53,6 +53,7 @@ public class OrderDispatcher {
     private Map<String, TradeConfirmation> trademap = new HashMap<String, TradeConfirmation>();
     private Map<Integer, String> reversetokensmap = null;
     private String password = null;
+    private boolean isLoggedin;
     
     public OrderDispatcher(String symbol) throws IOException{
     	//this.symbol = symbol;
@@ -172,12 +173,20 @@ public class OrderDispatcher {
         sendRequest(req.getStruct());
         
         long loopstarttime = System.currentTimeMillis();
-        while((System.currentTimeMillis()-loopstarttime)<2000){
+        while((System.currentTimeMillis()-loopstarttime)<1600){
         	
+        }
+        if(!isLoggedin){
+        	sendRequest(req.getStruct());
+            loopstarttime = System.currentTimeMillis();
+            while((System.currentTimeMillis()-loopstarttime)<1000){
+            	
+            }
         }
     }
     
     public void sendRequest(byte[] request) {
+    	LoggerUtil.getLogger().info("Sending Login Request");
         try {
             this.sendBytes(request, true);
         } catch (IOException ex) {
@@ -258,10 +267,10 @@ public class OrderDispatcher {
 					// writer.println(response.toString());
 					// }
 					if (response.Success == 1) {
-						// isLoggedin=true;
+						isLoggedin=true;
 						LoggerUtil.getLogger().info("Login succesful");
 					} else {
-						// isLoggedin = false;
+						//isLoggedin = false;
 						LoggerUtil.getLogger().info("Login Failed");
 					}
 				} catch (Exception ex) {
