@@ -240,7 +240,7 @@ public class SymbolEstimator {
 				LoggerUtil.getLogger().info("Sold - "+ismidday +" - " + buysell.getSymbol() );
 				SendMail.generateAndSendEmail("Successfully squared off - "+ buysell.getSymbol() +"  "+buysell.getType() + 
 						" at price - " + tradedprice+" please verify, enterprice - "+buysell.getEnterprice());
-			}else if(od.getOrderConfirmation() != null){
+			}else if(od.getOrderConfirmation(ssymb) != null){
 				updateStock();
 				LoggerUtil.getLogger().info("NotSold but order dispatched- "+ismidday +" - " + buysell.getSymbol() );
 				SendMail.generateAndSendEmail("Tried squaring off - "+ buysell.getSymbol() + 

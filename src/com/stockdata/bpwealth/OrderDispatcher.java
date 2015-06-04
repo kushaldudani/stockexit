@@ -47,7 +47,7 @@ public class OrderDispatcher {
    private String ip = "203.123.141.236";
    private int port = 51525;
     //Enques reading so there are no concurrent reads on our side
-    private OrderConfirmation ord_conf=null;
+    private Map<String, OrderConfirmation> ordMap=new HashMap<String, OrderConfirmation>();
     private ExchangeConfirmation item=null;
     //private TradeConfirmation trade=null;
     //private String symbol;
@@ -77,12 +77,15 @@ public class OrderDispatcher {
     	return null;
     }
     
-    public synchronized OrderConfirmation getOrderConfirmation(){
-    	return ord_conf;
+    public synchronized OrderConfirmation getOrderConfirmation(String symbol){
+    	if(ordMap.containsKey(symbol)){
+    		return ordMap.get(symbol);
+    	}
+    	return null;
     }
     
-    private synchronized void setOrderConfirmation(OrderConfirmation ordconf){
-    	ord_conf = ordconf;
+    private synchronized void setOrderConfirmation(String symbol, OrderConfirmation ordconf){
+    	ordMap.put(symbol, ordconf);
     }
     
     private synchronized void setTradeConfirmation(String symbol, TradeConfirmation trade){
@@ -301,7 +304,7 @@ public class OrderDispatcher {
 				try {
 
 					OrderConfirmation ordconf = new OrderConfirmation(message);
-					setOrderConfirmation(ordconf);
+					setOrderConfirmation(reversetokensmap.get(ordconf.Token),ordconf);
 					LoggerUtil.getLogger().info(ordconf+"");
 					/*
 					 * try (PrintWriter writer = new PrintWriter(new
@@ -489,7 +492,7 @@ public class OrderDispatcher {
                        // System.out.println("Message length:"+msg_length+"\tStream:"+baos.size()+"\tIndex:"+index    );
                         byte[] data = new byte[msg_length];
                         System.arraycopy(baos.toByteArray(), index, data, 0, data.length);
-                        new Thread((new parseData(data))).start();;
+                        new Thread((new parseData(data))).start();
                         index +=msg_length;
                         }
                         
