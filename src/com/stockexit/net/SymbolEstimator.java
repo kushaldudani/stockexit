@@ -203,24 +203,25 @@ public class SymbolEstimator {
 	private boolean sellStock(double curprice, double curprofit, String ismidday, String lasttime) {
 		try{
 			String ssymb = buysell.getSymbol().split("-")[0];
-			OrderDispatcher od = new OrderDispatcher(ssymb);
+			OrderDispatcher od = new OrderDispatcher();
 			od.connect();
 			TradeConfirmation trade = null;
 			if(buysell.getType().equals("Long")){
 				double limitprice = curprice*(0.995);
 				int limitprice100 = (int) (limitprice*100);
 				limitprice100 = roundup(limitprice100);
-				trade = od.sendOrder((short)0, (short)1, 
+				od.sendOrder((short)0, (short)1, 
 					Integer.toString(tokensmap.get(ssymb)), ssymb, limitprice100, 
 					marketlotmap.get(tokensmap.get(ssymb)), buysell.getExpiry(), buysell.getbudget());
 			}else{
 				double limitprice = curprice*(1.005);
 				int limitprice100 = (int) (limitprice*100);
 				limitprice100 = roundup(limitprice100);
-				trade = od.sendOrder((short)0, (short)0, 
+				od.sendOrder((short)0, (short)0, 
 					Integer.toString(tokensmap.get(ssymb)), ssymb, limitprice100, 
 					marketlotmap.get(tokensmap.get(ssymb)), buysell.getExpiry(), buysell.getbudget());
 			}
+			trade = pollTrade(od, ssymb);
 			if(trade != null){
 				buysell.setExited(true);
 				double tradedprice = ((double)(trade.TrdPrice)/(double)100);
@@ -261,6 +262,15 @@ public class SymbolEstimator {
 		return true;
 	}
 	
+	private TradeConfirmation pollTrade(OrderDispatcher od, String symbol) {
+		long loopstarttime = System.currentTimeMillis();
+    	while(((System.currentTimeMillis()-loopstarttime)<5000) && 
+    			od.getTradeConfirmation(symbol) == null){
+    		intervalwait();
+    	}
+    	return od.getTradeConfirmation(symbol);
+	}
+
 	private int roundup(int limitprice) {
 		int rnd = limitprice - (limitprice%10);
 		return rnd;
@@ -279,17 +289,14 @@ public class SymbolEstimator {
 		return lossthreshold;
 	}
 	
-	/*private double getstopthreshold(){
-		int daystring = buysell.getDaystried()+1;
-		double stothreshold;
-		if(daystring == 1){
-			stothreshold = -11;
-		}else if(daystring == 2 || daystring == 3){
-			stothreshold = -11;
-		}else{
-			stothreshold = -11;
+	private void intervalwait() {
+		long timestamp = System.currentTimeMillis();
+		int timetowait = (1000);
+		while(System.currentTimeMillis() < (timestamp+timetowait)){
+			try {
+				Thread.sleep(timetowait-System.currentTimeMillis()+timestamp);
+			} catch (InterruptedException e) {}
 		}
-		return stothreshold;
-	}*/
+	}
 
 }

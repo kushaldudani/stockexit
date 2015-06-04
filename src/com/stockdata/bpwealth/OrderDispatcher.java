@@ -14,6 +14,8 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
@@ -45,7 +47,6 @@ public class OrderDispatcher {
    private String ip = "203.123.141.236";
    private int port = 51525;
     //Enques reading so there are no concurrent reads on our side
-    private ExecutorService execService;
     private OrderConfirmation ord_conf=null;
     private ExchangeConfirmation item=null;
     //private TradeConfirmation trade=null;
@@ -53,9 +54,9 @@ public class OrderDispatcher {
     private Map<String, TradeConfirmation> trademap = new HashMap<String, TradeConfirmation>();
     private Map<Integer, String> reversetokensmap = null;
     private String password = null;
-    private boolean isLoggedin;
+    private AtomicInteger isLoggedin = new AtomicInteger(0);
     
-    public OrderDispatcher(String symbol) throws IOException{
+    public OrderDispatcher() throws IOException{
     	//this.symbol = symbol;
         echoSocket = new Socket(ip, port);
         echoSocket.setReceiveBufferSize(6092);
@@ -64,8 +65,7 @@ public class OrderDispatcher {
         echoSocket.setKeepAlive(true);
         echoSocket.setSoTimeout(30*1000);
         reversetokensmap = StockExitUtil.buildReverseTokensMap();
-        new Thread(new Listen()).start();
-        execService = Executors.newFixedThreadPool(1);
+        new Thread(new ListenDirector()).start();
         password = StockExitUtil.readPassword();
     }
     
@@ -81,11 +81,15 @@ public class OrderDispatcher {
     	return ord_conf;
     }
     
+    private synchronized void setOrderConfirmation(OrderConfirmation ordconf){
+    	ord_conf = ordconf;
+    }
+    
     private synchronized void setTradeConfirmation(String symbol, TradeConfirmation trade){
     	trademap.put(symbol, trade);
     }
    
-    public TradeConfirmation sendOrder(short requestType,
+    public synchronized void sendOrder(short requestType,
    		 short side, String token, String symbol,
    		 int rate, int marketLot, String expiry, int qty)  {
         try {
@@ -130,11 +134,12 @@ public class OrderDispatcher {
             LoggerUtil.getLogger().info(ord+"");
             this.sendBytes(ord.getStruct(),true);
             
-            long loopstarttime = System.currentTimeMillis();
-            while((getTradeConfirmation(symbol)==null)&& (System.currentTimeMillis()-loopstarttime)<30000){
+            //long loopstarttime = System.currentTimeMillis();
+            //while((getTradeConfirmation(symbol)==null)&& (System.currentTimeMillis()-loopstarttime)<30000){
             	
-            }
-            return getTradeConfirmation(symbol);
+            //}
+            //return getTradeConfirmation(symbol);
+            
             //setChanged();
             //notifyObservers(order);
             //db.saveOrUpdateOrder(order);
@@ -148,7 +153,7 @@ public class OrderDispatcher {
         } catch (Exception ex) {
         	LoggerUtil.getLogger().log(Level.SEVERE, "BPConnector sendorder", 
             		ex);
-        	return null;
+        	//return null;
         }
     }
 
@@ -160,7 +165,7 @@ public class OrderDispatcher {
         
     }
     
-    public void connect() throws Exception {
+    public synchronized void connect() throws Exception {
     	LoginRequest req = new LoginRequest();
 		req.ClientCode = "SLS011";
 		req.ConnType = 2;//1 LAN 2 INTERNET 3 VSAT
@@ -172,20 +177,18 @@ public class OrderDispatcher {
 		LoggerUtil.getLogger().info(req.toString());
         sendRequest(req.getStruct());
         
-        long loopstarttime = System.currentTimeMillis();
-        while((System.currentTimeMillis()-loopstarttime)<1600){
+        int cnt = 0;
+        while(isLoggedin.get()==0 && cnt < 2){
+        	long loopstarttime = System.currentTimeMillis();
+        	while((System.currentTimeMillis()-loopstarttime)<1500){
         	
-        }
-        if(!isLoggedin){
+        	}
+        	cnt++;
         	sendRequest(req.getStruct());
-            loopstarttime = System.currentTimeMillis();
-            while((System.currentTimeMillis()-loopstarttime)<1000){
-            	
-            }
         }
     }
     
-    public void sendRequest(byte[] request) {
+    private void sendRequest(byte[] request) {
     	LoggerUtil.getLogger().info("Sending Login Request");
         try {
             this.sendBytes(request, true);
@@ -268,7 +271,7 @@ public class OrderDispatcher {
 					// writer.println(response.toString());
 					// }
 					if (response.Success == 1) {
-						isLoggedin=true;
+						isLoggedin.set(1);;
 						LoggerUtil.getLogger().info("Login succesful");
 					} else {
 						//isLoggedin = false;
@@ -297,8 +300,9 @@ public class OrderDispatcher {
 
 				try {
 
-					ord_conf = new OrderConfirmation(message);
-					LoggerUtil.getLogger().info(ord_conf+"");
+					OrderConfirmation ordconf = new OrderConfirmation(message);
+					setOrderConfirmation(ordconf);
+					LoggerUtil.getLogger().info(ordconf+"");
 					/*
 					 * try (PrintWriter writer = new PrintWriter(new
 					 * BufferedWriter(new FileWriter(APItoStr, true)))) {
@@ -415,6 +419,32 @@ public class OrderDispatcher {
 			}
 		}
 	}
+	
+	private class ListenDirector implements Runnable {
+		
+		private ExecutorService executorService;
+		@Override
+		public void run() {
+			long loopstarttime = System.currentTimeMillis();
+	    	while((System.currentTimeMillis()-loopstarttime)<60000){
+	    		executorService = Executors.newFixedThreadPool(1);
+	    		executorService.execute(new Listen());
+	    		executorService.shutdown();
+	    		boolean result = false;
+	    		while(true){
+	    			try {
+	    				result = executorService.awaitTermination(7, TimeUnit.HOURS);
+	    				LoggerUtil.getLogger().info("Listen Connection lost - "+result);
+	    				break;
+	    			} catch (Exception e) {
+	    				LoggerUtil.getLogger().log(Level.SEVERE, "Listen Connection interrupted", e);
+	    			}
+	    		}
+	    		
+	    	}
+		}
+		
+	}
     
     private class Listen implements Runnable{
 
@@ -459,7 +489,7 @@ public class OrderDispatcher {
                        // System.out.println("Message length:"+msg_length+"\tStream:"+baos.size()+"\tIndex:"+index    );
                         byte[] data = new byte[msg_length];
                         System.arraycopy(baos.toByteArray(), index, data, 0, data.length);
-                        execService.execute((new parseData(data)));
+                        new Thread((new parseData(data))).start();;
                         index +=msg_length;
                         }
                         
@@ -484,15 +514,9 @@ public class OrderDispatcher {
             } catch (Exception ex) {
             	LoggerUtil.getLogger().log(Level.SEVERE, "BPConnector Listen", 
 	            		ex);
-            } finally {
-                try {
-                	LoggerUtil.getLogger().info("Closing Socket and InputStream in Listen Thread of BPConnector");
-                    dIn.close();
-                    execService.shutdown();
-                } catch (IOException ex) {}
-            }
+            } 
                         
-                    
+            LoggerUtil.getLogger().info("Listen thread exiting");    
                     
                     
             
@@ -500,7 +524,7 @@ public class OrderDispatcher {
                 }
             }
  
-    public synchronized  void sendBytes(byte[] request, boolean compress) throws IOException{
+    private synchronized  void sendBytes(byte[] request, boolean compress) throws IOException{
         if(!compress){
         DataOutputStream outToServer = new DataOutputStream(echoSocket.getOutputStream());
         outToServer.write(request);
