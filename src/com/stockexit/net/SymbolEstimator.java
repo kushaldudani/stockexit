@@ -153,6 +153,7 @@ public class SymbolEstimator {
 	}
 	
 	private double exitAtStartMax = 0;
+	private double exitAtStartLastAvg = 0;
 	
 	public boolean exitAtStart(List<Double> prices, double low, double high, 
 			String lasttime){
@@ -166,8 +167,16 @@ public class SymbolEstimator {
 		
 		if(curprofit >= getExitAtStartProfit()){
 			return sellStock(curprice, curprofit, "Startday",lasttime);
-		}else if(exitAtStartMax >= 0.53 && curprofit < 0.47){
-			return sellStock(curprice, curprofit, "Startday",lasttime);
+		}else if(exitAtStartMax >= 0.4){
+			int szz = prices.size();
+			if(szz >= 4){
+				double exitAtStartCurAvg = ((prices.get(szz-1)+prices.get(szz-2)+
+						prices.get(szz-3)+prices.get(szz-4))/(double)4);
+				if(exitAtStartCurAvg <= exitAtStartLastAvg){
+					return sellStock(curprice, curprofit, "Startday",lasttime);
+				}
+				exitAtStartLastAvg = exitAtStartCurAvg;
+			}
 		}
 		return false;
 	}
