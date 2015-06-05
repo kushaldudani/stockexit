@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.logging.Level;
 
+import com.stockdata.bpwealth.OrderDispatcher;
 import com.stockdata.bpwealth.broadcast.BroadCastManager;
 import com.stockdata.bpwealth.broadcast.TickData;
 import com.stockexit.util.LoggerUtil;
@@ -46,6 +47,14 @@ public class StockExit {
 			LoggerUtil.getLogger().info("No Stocks to exit");
 		    System.exit(1);
 		}
+		OrderDispatcher od=null;
+		try {
+			od = new OrderDispatcher();
+			od.connect();
+		} catch (Exception e) {
+			LoggerUtil.getLogger().info("Cannot create the instance of OrderDispatcher");
+		    System.exit(1);
+		}
 		
 		for(int ii=1;ii<records.size();ii++){
 			if((records.get(ii).getSymbol().split("-")[0]).
@@ -73,7 +82,7 @@ public class StockExit {
 			if(bsell.isExited()==false){
 				String sss = bsell.getSymbol().split("-")[0];
 				SynQueue<TickData> qu = new SynQueue<TickData>();
-				new Thread(new ExitWorker(bsell,qu,lastentry)).start();
+				new Thread(new ExitWorker(bsell,qu,lastentry, od)).start();
 				queuemap.put(sss, qu);
 			}
 		}

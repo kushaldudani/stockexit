@@ -17,14 +17,16 @@ public class SymbolEstimator {
 	private double lossthreshold;
 	private Map<String, Integer> tokensmap;
 	private Map<Integer, Integer> marketlotmap;
+	private OrderDispatcher od;
 	//private double stopthreshold;
 	
-	public SymbolEstimator(BuySell buysell, String curdate) {
+	public SymbolEstimator(BuySell buysell, String curdate, OrderDispatcher od) {
 		this.buysell = buysell;
 		this.curdate = curdate;
 		this.lossthreshold = getlossthreshold();
 		this.tokensmap = StockExitUtil.buildTokensMap();
 		this.marketlotmap = StockExitUtil.buildMarketLotMap();
+		this.od = od;
 		//this.stopthreshold = getstopthreshold();
 	}
 	
@@ -167,11 +169,11 @@ public class SymbolEstimator {
 		
 		if(curprofit >= getExitAtStartProfit()){
 			return sellStock(curprice, curprofit, "Startday",lasttime);
-		}else if(exitAtStartMax >= 0.4){
+		}else if(exitAtStartMax >= 0.45){
 			int szz = prices.size();
-			if(szz >= 4){
+			if(szz >= 3){
 				double exitAtStartCurAvg = ((prices.get(szz-1)+prices.get(szz-2)+
-						prices.get(szz-3)+prices.get(szz-4))/(double)4);
+						prices.get(szz-3))/(double)3);
 				if(exitAtStartCurAvg <= exitAtStartLastAvg){
 					return sellStock(curprice, curprofit, "Startday",lasttime);
 				}
@@ -185,7 +187,7 @@ public class SymbolEstimator {
 		int daystring = buysell.getDaystried()+1;
 		double exitAtStartProfit;
 		if(daystring == 1){
-			exitAtStartProfit = 1;
+			exitAtStartProfit = 0.75;
 		}else if(daystring == 2 ){
 			exitAtStartProfit = 0.25;
 		}else{
@@ -212,7 +214,7 @@ public class SymbolEstimator {
 	private boolean sellStock(double curprice, double curprofit, String ismidday, String lasttime) {
 		try{
 			String ssymb = buysell.getSymbol().split("-")[0];
-			OrderDispatcher od = new OrderDispatcher();
+			//OrderDispatcher od = new OrderDispatcher();
 			od.connect();
 			TradeConfirmation trade = null;
 			if(buysell.getType().equals("Long")){
@@ -273,7 +275,7 @@ public class SymbolEstimator {
 	
 	private TradeConfirmation pollTrade(OrderDispatcher od, String symbol) {
 		long loopstarttime = System.currentTimeMillis();
-    	while(((System.currentTimeMillis()-loopstarttime)<5000) && 
+    	while(((System.currentTimeMillis()-loopstarttime)<2000) && 
     			od.getTradeConfirmation(symbol) == null){
     		intervalwait();
     	}
@@ -300,7 +302,7 @@ public class SymbolEstimator {
 	
 	private void intervalwait() {
 		long timestamp = System.currentTimeMillis();
-		int timetowait = (1000);
+		int timetowait = (500);
 		while(System.currentTimeMillis() < (timestamp+timetowait)){
 			try {
 				Thread.sleep(timetowait-System.currentTimeMillis()+timestamp);

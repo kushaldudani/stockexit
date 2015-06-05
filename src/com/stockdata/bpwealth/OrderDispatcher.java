@@ -180,13 +180,12 @@ public class OrderDispatcher {
 		LoggerUtil.getLogger().info(req.toString());
         sendRequest(req.getStruct());
         
-        int cnt = 0;
-        while(isLoggedin.get()==0 && cnt < 3){
+        
+        if(isLoggedin.get()==0){
         	long loopstarttime = System.currentTimeMillis();
-        	while((System.currentTimeMillis()-loopstarttime)<1100){
+        	while((System.currentTimeMillis()-loopstarttime)<1000){
         	
         	}
-        	cnt++;
         	sendRequest(req.getStruct());
         }
     }
@@ -429,9 +428,9 @@ public class OrderDispatcher {
 		@Override
 		public void run() {
 			long loopstarttime = System.currentTimeMillis();
-	    	while((System.currentTimeMillis()-loopstarttime)<60000){
+	    	while((System.currentTimeMillis()-loopstarttime)<22320000){
 	    		executorService = Executors.newFixedThreadPool(1);
-	    		executorService.execute(new Listen());
+	    		executorService.execute(new Listen(loopstarttime));
 	    		executorService.shutdown();
 	    		boolean result = false;
 	    		while(true){
@@ -450,6 +449,11 @@ public class OrderDispatcher {
 	}
     
     private class Listen implements Runnable{
+    	
+    	private long loopstarttime;
+    	public Listen(long loopstarttime){
+    		this.loopstarttime = loopstarttime;
+    	}
 
         @Override
         public void run() {
@@ -460,8 +464,7 @@ public class OrderDispatcher {
                     short msg_length=0;
                     int index = 0;
                     ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
-                    long loopstarttime = System.currentTimeMillis();
-                    while((System.currentTimeMillis()-loopstarttime)<60000){
+                    while((System.currentTimeMillis()-loopstarttime)<22320000){
                         
                         byte[] fresh = new byte[10240];
                         int size  = dIn.read( fresh );

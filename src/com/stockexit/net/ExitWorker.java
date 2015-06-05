@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import com.stockdata.bpwealth.OrderDispatcher;
 import com.stockdata.bpwealth.broadcast.TickData;
 import com.stockexit.util.LoggerUtil;
 import com.stockexit.util.StockExitUtil;
@@ -19,9 +20,9 @@ public class ExitWorker implements Runnable {
 	private SynQueue<TickData> qu;
 	private String curdate;
 	private List<Double> prices;
+	private OrderDispatcher od;
 	
-	
-	public ExitWorker(BuySell buysell, SynQueue<TickData> qu, String curdate){
+	public ExitWorker(BuySell buysell, SynQueue<TickData> qu, String curdate, OrderDispatcher od){
 		this.buysell = buysell;
 		this.qu = qu;
 		this.curdate = curdate;
@@ -42,7 +43,7 @@ public class ExitWorker implements Runnable {
 		}else{
 			System.exit(1);
 		}
-		SymbolEstimator estimator = new SymbolEstimator(buysell, curdate);
+		SymbolEstimator estimator = new SymbolEstimator(buysell, curdate, od);
 		boolean sold = false;
 		//intitialwait();
 		while(true){
