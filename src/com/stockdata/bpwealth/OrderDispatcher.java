@@ -34,12 +34,12 @@ public class OrderDispatcher {
 	
 	public static void main(String[] args) throws Exception {
 		TimeZone.setDefault(TimeZone.getTimeZone("IST"));
-		//OrderDispatcher connector = new OrderDispatcher();
-		//connector.connect();
+		OrderDispatcher connector = new OrderDispatcher();
+		connector.connect();
 		
-		//Thread.sleep(3000);
-		//connector.sendOrder((short)0, (short)1, "44303", 
-		//		"ABIRLANUVO", 182900, 125, "2015-05-28");
+		Thread.sleep(2000);
+		connector.sendOrder((short)0, (short)1, "45239", 
+				"GODREJIND", 33600, 1001, "2015-06-25", 1);
 	}
     
    private Socket echoSocket;

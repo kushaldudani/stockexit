@@ -27,6 +27,7 @@ public class ExitWorker implements Runnable {
 		this.qu = qu;
 		this.curdate = curdate;
 		prices = new ArrayList<Double>();
+		this.od = od;
 	}
 	
 	private double trendprice10 = 0;
