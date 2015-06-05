@@ -20,14 +20,14 @@ public class ExitWorker implements Runnable {
 	private SynQueue<TickData> qu;
 	private String curdate;
 	private List<Double> prices;
-	private OrderDispatcher od;
 	
-	public ExitWorker(BuySell buysell, SynQueue<TickData> qu, String curdate, OrderDispatcher od){
+	
+	public ExitWorker(BuySell buysell, SynQueue<TickData> qu, String curdate){
 		this.buysell = buysell;
 		this.qu = qu;
 		this.curdate = curdate;
 		prices = new ArrayList<Double>();
-		this.od = od;
+		
 	}
 	
 	private double trendprice10 = 0;
@@ -44,7 +44,7 @@ public class ExitWorker implements Runnable {
 		}else{
 			System.exit(1);
 		}
-		SymbolEstimator estimator = new SymbolEstimator(buysell, curdate, od);
+		SymbolEstimator estimator = new SymbolEstimator(buysell, curdate);
 		boolean sold = false;
 		//intitialwait();
 		while(true){

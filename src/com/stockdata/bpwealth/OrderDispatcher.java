@@ -38,8 +38,8 @@ public class OrderDispatcher {
 		connector.connect();
 		
 		Thread.sleep(2000);
-		connector.sendOrder((short)0, (short)1, "45239", 
-				"GODREJIND", 33600, 1001, "2015-06-25", 1);
+		//connector.sendOrder((short)0, (short)1, "45239", 
+			//	"GODREJIND", 33600, 1001, "2015-06-25", 1);
 	}
     
    private Socket echoSocket;
@@ -182,11 +182,11 @@ public class OrderDispatcher {
         
         
         if(isLoggedin.get()==0){
+        	sendRequest(req.getStruct());
         	long loopstarttime = System.currentTimeMillis();
-        	while((System.currentTimeMillis()-loopstarttime)<1000){
+        	while((System.currentTimeMillis()-loopstarttime)<1100){
         	
         	}
-        	sendRequest(req.getStruct());
         }
     }
     
@@ -428,7 +428,7 @@ public class OrderDispatcher {
 		@Override
 		public void run() {
 			long loopstarttime = System.currentTimeMillis();
-	    	while((System.currentTimeMillis()-loopstarttime)<22320000){
+	    	while((System.currentTimeMillis()-loopstarttime)<60000){
 	    		executorService = Executors.newFixedThreadPool(1);
 	    		executorService.execute(new Listen(loopstarttime));
 	    		executorService.shutdown();
@@ -464,7 +464,7 @@ public class OrderDispatcher {
                     short msg_length=0;
                     int index = 0;
                     ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
-                    while((System.currentTimeMillis()-loopstarttime)<22320000){
+                    while((System.currentTimeMillis()-loopstarttime)<60000){
                         
                         byte[] fresh = new byte[10240];
                         int size  = dIn.read( fresh );

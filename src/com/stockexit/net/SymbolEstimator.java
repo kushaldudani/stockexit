@@ -17,16 +17,15 @@ public class SymbolEstimator {
 	private double lossthreshold;
 	private Map<String, Integer> tokensmap;
 	private Map<Integer, Integer> marketlotmap;
-	private OrderDispatcher od;
+	
 	//private double stopthreshold;
 	
-	public SymbolEstimator(BuySell buysell, String curdate, OrderDispatcher od) {
+	public SymbolEstimator(BuySell buysell, String curdate) {
 		this.buysell = buysell;
 		this.curdate = curdate;
 		this.lossthreshold = getlossthreshold();
 		this.tokensmap = StockExitUtil.buildTokensMap();
 		this.marketlotmap = StockExitUtil.buildMarketLotMap();
-		this.od = od;
 		//this.stopthreshold = getstopthreshold();
 	}
 	
@@ -155,7 +154,7 @@ public class SymbolEstimator {
 	}
 	
 	private double exitAtStartMax = 0;
-	private double exitAtStartLastAvg = 0;
+	//private double exitAtStartLastAvg = 0;
 	
 	public boolean exitAtStart(List<Double> prices, double low, double high, 
 			String lasttime){
@@ -166,11 +165,13 @@ public class SymbolEstimator {
 		if(curprofit > exitAtStartMax){
 			exitAtStartMax = curprofit;
 		}
+		double price2 = prices.get(prices.size()-2);
+		double profit2 = getPft(enterprice, price2, buysell.getType());
 		
 		if(curprofit >= getExitAtStartProfit()){
 			return sellStock(curprice, curprofit, "Startday",lasttime);
-		}else if(exitAtStartMax >= 0.45){
-			int szz = prices.size();
+		}else if(exitAtStartMax >= 0.45 && curprofit < 0.15 && profit2 < 0.15){
+			/*int szz = prices.size();
 			if(szz >= 3){
 				double exitAtStartCurAvg = ((prices.get(szz-1)+prices.get(szz-2)+
 						prices.get(szz-3))/(double)3);
@@ -178,7 +179,8 @@ public class SymbolEstimator {
 					return sellStock(curprice, curprofit, "Startday",lasttime);
 				}
 				exitAtStartLastAvg = exitAtStartCurAvg;
-			}
+			}*/
+			return sellStock(curprice, curprofit, "Startday",lasttime);
 		}
 		return false;
 	}
@@ -214,7 +216,7 @@ public class SymbolEstimator {
 	private boolean sellStock(double curprice, double curprofit, String ismidday, String lasttime) {
 		try{
 			String ssymb = buysell.getSymbol().split("-")[0];
-			//OrderDispatcher od = new OrderDispatcher();
+			OrderDispatcher od = new OrderDispatcher();
 			od.connect();
 			TradeConfirmation trade = null;
 			if(buysell.getType().equals("Long")){
