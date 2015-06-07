@@ -75,7 +75,7 @@ public class SymbolEstimator {
 	// relax the 0.4 number
 	private double getTargetProfit(double trendpft) {
 		if(trendpft < -1.7){
-			return -0.75;
+			return -0.6;
 		}else if(trendpft < -0.9){
 			return -0.2;
 		}else if(trendpft < 0){
@@ -108,17 +108,25 @@ public class SymbolEstimator {
 		return trend;
 	}
 	
+	private long exitAtEndTimer = 0;
+	
     // add different profit target depending on the days tried
 	public boolean exitAtEnd(List<Double> prices, double low, double high, 
 			String lasttime){
 		double curprice = prices.get(prices.size()-1);
 		double enterprice = buysell.getEnterprice();
 		double curprofit = getPft(enterprice,curprice,buysell.getType());
-		LoggerUtil.getLogger().info(buysell.getSymbol() + "  " + lasttime+"  " +curprofit);
+		
 		int size = prices.size();
 		
 		if(curprofit >= getExitAtEndProfit()){
-			return sellStock(curprice, curprofit, "Endday",lasttime);
+			LoggerUtil.getLogger().info(buysell.getSymbol() + "  " + lasttime+"  " +curprofit);
+			if(exitAtEndTimer == 0){
+				exitAtEndTimer = System.currentTimeMillis();
+			}
+			if( ((System.currentTimeMillis()-exitAtEndTimer) > 75000) ){
+				return sellStock(curprice, curprofit, "Endday",lasttime);
+			}
 		}else if(size>=3){ 
 			double price1 = prices.get(size-1);
 			double price2 = prices.get(size-2);
@@ -126,6 +134,8 @@ public class SymbolEstimator {
 			double loss1 = getPft(enterprice,price1,buysell.getType());
 			double loss2 = getPft(enterprice,price2,buysell.getType());
 			double loss3 = getPft(enterprice,price3,buysell.getType());
+			int qty = buysell.getbudget(); 
+			loss1 = loss1*qty; loss2 = loss2*qty; loss3 = loss3*qty;
 			LoggerUtil.getLogger().info(buysell.getSymbol()+ "  "+ loss1+"  "+loss2+"  "+loss3);
 			if(loss1 < lossthreshold && 
 					loss2 < lossthreshold && loss3 < lossthreshold){
@@ -144,17 +154,17 @@ public class SymbolEstimator {
 		int daystring = buysell.getDaystried()+1;
 		double exitAtEndProfit;
 		if(daystring == 1){
-			exitAtEndProfit = 0;
+			exitAtEndProfit = 0.05;
 		}else if(daystring == 2 ){
-			exitAtEndProfit = -0.2;
+			exitAtEndProfit = -0.15;
 		}else{
-			exitAtEndProfit = -0.5;
+			exitAtEndProfit = -0.3;
 		}
 		return exitAtEndProfit;
 	}
 	
 	private double exitAtStartMax = 0;
-	//private double exitAtStartLastAvg = 0;
+	private long exitAtStartTimer = 0;
 	
 	public boolean exitAtStart(List<Double> prices, double low, double high, 
 			String lasttime){
@@ -168,19 +178,17 @@ public class SymbolEstimator {
 		double price2 = prices.get(prices.size()-2);
 		double profit2 = getPft(enterprice, price2, buysell.getType());
 		
-		if(curprofit >= getExitAtStartProfit()){
+		if(curprofit >= 0.85){
 			return sellStock(curprice, curprofit, "Startday",lasttime);
-		}else if(exitAtStartMax >= 0.45 && curprofit < 0.15 && profit2 < 0.15){
-			/*int szz = prices.size();
-			if(szz >= 3){
-				double exitAtStartCurAvg = ((prices.get(szz-1)+prices.get(szz-2)+
-						prices.get(szz-3))/(double)3);
-				if(exitAtStartCurAvg <= exitAtStartLastAvg){
-					return sellStock(curprice, curprofit, "Startday",lasttime);
-				}
-				exitAtStartLastAvg = exitAtStartCurAvg;
-			}*/
-			return sellStock(curprice, curprofit, "Startday",lasttime);
+		}else if(exitAtStartMax >= getExitAtStartProfit()){
+			if(exitAtStartTimer == 0){
+				exitAtStartTimer = System.currentTimeMillis();
+			}
+			double exitAtStartPftLossBreaker = getExitAtStartProfit() - 0.33;
+			if( ((System.currentTimeMillis()-exitAtStartTimer) > 75000) ||
+					(curprofit < exitAtStartPftLossBreaker && profit2 < exitAtStartPftLossBreaker) ){
+				return sellStock(curprice, curprofit, "Startday",lasttime);
+			}
 		}
 		return false;
 	}
@@ -189,7 +197,7 @@ public class SymbolEstimator {
 		int daystring = buysell.getDaystried()+1;
 		double exitAtStartProfit;
 		if(daystring == 1){
-			exitAtStartProfit = 0.75;
+			exitAtStartProfit = 0.45;
 		}else if(daystring == 2 ){
 			exitAtStartProfit = 0.25;
 		}else{

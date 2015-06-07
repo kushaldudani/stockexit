@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-import com.stockdata.bpwealth.OrderDispatcher;
 import com.stockdata.bpwealth.broadcast.TickData;
 import com.stockexit.util.LoggerUtil;
 import com.stockexit.util.StockExitUtil;
