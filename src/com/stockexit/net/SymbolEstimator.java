@@ -175,15 +175,15 @@ public class SymbolEstimator {
 		if(curprofit > exitAtStartMax){
 			exitAtStartMax = curprofit;
 		}
-		double price2 = prices.get(prices.size()-2);
-		double profit2 = getPft(enterprice, price2, buysell.getType());
 		
 		if(curprofit >= 0.85){
 			return sellStock(curprice, curprofit, "Startday",lasttime);
-		}else if(exitAtStartMax >= getExitAtStartProfit()){
+		}else if((exitAtStartMax >= getExitAtStartProfit()) && (prices.size() >=2)){
 			if(exitAtStartTimer == 0){
 				exitAtStartTimer = System.currentTimeMillis();
 			}
+			double price2 = prices.get(prices.size()-2);
+			double profit2 = getPft(enterprice, price2, buysell.getType());
 			double exitAtStartPftLossBreaker = getExitAtStartProfit() - 0.33;
 			if( ((System.currentTimeMillis()-exitAtStartTimer) > 75000) ||
 					(curprofit < exitAtStartPftLossBreaker && profit2 < exitAtStartPftLossBreaker) ){
