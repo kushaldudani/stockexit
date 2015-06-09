@@ -89,9 +89,9 @@ public class SymbolEstimator {
 	// relax the 0.4 number
 	private double getTargetProfit(double trendpft) {
 		if(trendpft < -1.4){
-			return -0.6;
+			return -0.35;
 		}else if(trendpft < -0.6){
-			return -0.2;
+			return -0.15;
 		}else if(trendpft < 0){
 			return 0.2;
 		}else if(trendpft > 0.9){
@@ -190,7 +190,7 @@ public class SymbolEstimator {
 			exitAtStartMax = curprofit;
 		}
 		
-		if(curprofit >= 0.85){
+		if(curprofit >= 1){
 			return sellStock(curprice, curprofit, "Startday",lasttime);
 		}else if((exitAtStartMax >= getExitAtStartProfit()) && (prices.size() >=2)){
 			if(exitAtStartTimer == 0){
@@ -199,7 +199,7 @@ public class SymbolEstimator {
 			double price2 = prices.get(prices.size()-2);
 			double profit2 = getPft(enterprice, price2, buysell.getType());
 			double exitAtStartPftLossBreaker = getExitAtStartProfit() - 0.35;
-			if( ((System.currentTimeMillis()-exitAtStartTimer) > 75000) ||
+			if( ((System.currentTimeMillis()-exitAtStartTimer) > 100000) ||
 					(curprofit < exitAtStartPftLossBreaker && profit2 < exitAtStartPftLossBreaker) ){
 				return sellStock(curprice, curprofit, "Startday",lasttime);
 			}
@@ -211,7 +211,7 @@ public class SymbolEstimator {
 		int daystring = buysell.getDaystried()+1;
 		double exitAtStartProfit;
 		if(daystring == 1){
-			exitAtStartProfit = 0.45;
+			exitAtStartProfit = 0.48;
 		}else if(daystring == 2 ){
 			exitAtStartProfit = 0.25;
 		}else{
