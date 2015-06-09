@@ -55,14 +55,13 @@ public class SymbolEstimator {
 			double profit2 = getPft(enterprice,price2,buysell.getType());
 			double profit3 = getPft(enterprice,price3,buysell.getType());
 			LoggerUtil.getLogger().info(buysell.getSymbol()+ "  "+ profit1+"  trendprofit-"+trendpft);
-			if(profit1 >= targetpft || profit1 >= 1.7){
+			if(profit1 >= targetpft || profit1 >= 1.4){
 				return sellStock(price1, profit1, "Middayday",lasttime);
-			}else if(trendpft > 1 && profit1 < 0.8 && profit2 < 0.8){
+			}else if(trendpft > 1 && profit1 < 0.8 && profit2 < 0.8 && profit3 < 0.8){
 				return sellStock(price1, profit1, "Middayday",lasttime);
-			}else if(trendpft > 0.5 && profit1 < 0.4 && profit2 < 0.4){
+			}else if(trendpft > 0.5 && profit1 < 0.4 && profit2 < 0.4 && profit2 < 0.4){
 				return sellStock(price1, profit1, "Middayday",lasttime);
-			}else if(trendpft > 0.25 && profit1 < -0.8
-					&& profit2 < -0.8 && profit3 < -0.8){
+			}else if(sellIfSlipFromTrendPft(trendpft, targetpft, profit1)){
 				return sellStock(price1, profit1, "Middayday",lasttime);
 			}
 		}
@@ -70,19 +69,34 @@ public class SymbolEstimator {
 		return false;
 		//buysell.getDaystried()+1)>=2 && (profit1>-1&&profit1<0.5)
 	}
+	
+	private int lingeringstslipcntr = 0;
+	
+	private boolean sellIfSlipFromTrendPft(double trendpft, double targetpft, double curprofit){
+		// break it into 2 conditions, negative only for lingering stocks
+		if(buysell.getDaystried() > 2){
+			if((trendpft > -0.45) && (curprofit-trendpft) < -0.25){
+				lingeringstslipcntr++;
+			}
+			if(lingeringstslipcntr >= 3){
+				return true;
+			}
+		}
+		return false;
+	}
 	// 2 things has to be done here
 	// these logic is good, only thing is the numbers need to vary depending on past stock volatility
 	// relax the 0.4 number
 	private double getTargetProfit(double trendpft) {
-		if(trendpft < -1.7){
+		if(trendpft < -1.4){
 			return -0.6;
-		}else if(trendpft < -0.9){
+		}else if(trendpft < -0.6){
 			return -0.2;
 		}else if(trendpft < 0){
 			return 0.2;
-		}else if(trendpft > 1){
+		}else if(trendpft > 0.9){
 			return (trendpft+0.2);
-		}else if(trendpft > 0.5){
+		}else if(trendpft > 0.4){
 			return (trendpft+0.25);
 		}else {
 			return (trendpft+0.3);
@@ -119,7 +133,7 @@ public class SymbolEstimator {
 		
 		int size = prices.size();
 		
-		if(curprofit >= getExitAtEndProfit()){
+		if((curprofit >= getExitAtEndProfit()) || (exitAtEndTimer > 0)){
 			LoggerUtil.getLogger().info(buysell.getSymbol() + "  " + lasttime+"  " +curprofit);
 			if(exitAtEndTimer == 0){
 				exitAtEndTimer = System.currentTimeMillis();
@@ -184,7 +198,7 @@ public class SymbolEstimator {
 			}
 			double price2 = prices.get(prices.size()-2);
 			double profit2 = getPft(enterprice, price2, buysell.getType());
-			double exitAtStartPftLossBreaker = getExitAtStartProfit() - 0.33;
+			double exitAtStartPftLossBreaker = getExitAtStartProfit() - 0.35;
 			if( ((System.currentTimeMillis()-exitAtStartTimer) > 75000) ||
 					(curprofit < exitAtStartPftLossBreaker && profit2 < exitAtStartPftLossBreaker) ){
 				return sellStock(curprice, curprofit, "Startday",lasttime);
