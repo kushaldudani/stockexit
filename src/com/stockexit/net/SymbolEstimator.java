@@ -215,7 +215,7 @@ public class SymbolEstimator {
 		}else if(daystring == 2 ){
 			exitAtStartProfit = 0.25;
 		}else{
-			exitAtStartProfit = 0;
+			exitAtStartProfit = 0.05;
 		}
 		return exitAtStartProfit;
 	}
