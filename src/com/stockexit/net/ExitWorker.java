@@ -65,27 +65,27 @@ public class ExitWorker implements Runnable {
 				prices.add(price);
 				if(lasttime.compareTo("09:16") >= 0 && lasttime.compareTo("09:45") < 0){
 					sold = estimator.exitAtStart(prices,low,high,lasttime);
-				}else if(lasttime.compareTo("10:00") >= 0 && lasttime.compareTo("10:45") < 0){
+				}else if(lasttime.compareTo("09:55") >= 0 && lasttime.compareTo("10:45") < 0){
 					if(trendprice10 == 0){
 						trendprice10 = estimator.getAvgTrend(prices);
 					}
 					sold = estimator.exitAtMidday(prices,low,high,lasttime,trendprice10);
-				}else if(lasttime.compareTo("11:00") >= 0 && lasttime.compareTo("11:45") < 0){
+				}else if(lasttime.compareTo("10:55") >= 0 && lasttime.compareTo("11:45") < 0){
 					if(trendprice11 == 0){
 						trendprice11 = estimator.getAvgTrend(prices);
 					}
 					sold = estimator.exitAtMidday(prices,low,high,lasttime,trendprice11);
-				}else if(lasttime.compareTo("12:00") >= 0 && lasttime.compareTo("12:45") < 0){
+				}else if(lasttime.compareTo("11:55") >= 0 && lasttime.compareTo("12:45") < 0){
 					if(trendprice12 == 0){
 						trendprice12 = estimator.getAvgTrend(prices);
 					}
 					sold = estimator.exitAtMidday(prices,low,high,lasttime,trendprice12);
-				}else if(lasttime.compareTo("13:00") >= 0 && lasttime.compareTo("13:45") < 0){
+				}else if(lasttime.compareTo("12:55") >= 0 && lasttime.compareTo("13:45") < 0){
 					if(trendprice13 == 0){
 						trendprice13 = estimator.getAvgTrend(prices);
 					}
 					sold = estimator.exitAtMidday(prices,low,high,lasttime,trendprice13);
-				}else if(lasttime.compareTo("14:00") >= 0 && lasttime.compareTo("14:25") < 0){
+				}else if(lasttime.compareTo("13:55") >= 0 && lasttime.compareTo("14:25") < 0){
 					if(trendprice14 == 0){
 						trendprice14 = estimator.getAvgTrend(prices);
 					}

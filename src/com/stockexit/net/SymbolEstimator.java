@@ -61,6 +61,8 @@ public class SymbolEstimator {
 				return sellStock(price1, profit1, "Middayday",lasttime);
 			}else if(trendpft > 0.5 && profit1 < 0.4 && profit2 < 0.4 && profit2 < 0.4){
 				return sellStock(price1, profit1, "Middayday",lasttime);
+			}else if(buysell.getDaystried() >= 2 && profit1 >= 0.2){
+				return sellStock(price1, profit1, "Middayday",lasttime);
 			}else if(sellIfSlipFromTrendPft(trendpft, targetpft, profit1)){
 				return sellStock(price1, profit1, "Middayday",lasttime);
 			}
@@ -74,11 +76,11 @@ public class SymbolEstimator {
 	
 	private boolean sellIfSlipFromTrendPft(double trendpft, double targetpft, double curprofit){
 		// break it into 2 conditions, negative only for lingering stocks
-		if(buysell.getDaystried() > 2){
-			if((trendpft > -0.45) && (curprofit-trendpft) < -0.25){
+		if(buysell.getDaystried() >= 2){
+			if((trendpft > -0.3) && (curprofit-trendpft) < -0.25){
 				lingeringstslipcntr++;
 			}
-			if(lingeringstslipcntr >= 3){
+			if(lingeringstslipcntr >= 9){
 				return true;
 			}
 		}
@@ -91,15 +93,23 @@ public class SymbolEstimator {
 		if(trendpft < -1.4){
 			return -0.35;
 		}else if(trendpft < -0.6){
-			return -0.15;
+			return -0.18;
 		}else if(trendpft < 0){
-			return 0.2;
+			if(buysell.getDaystried() >= 2){
+				return 0.05;
+			}else{
+				return 0.2;
+			}
 		}else if(trendpft > 0.9){
 			return (trendpft+0.2);
-		}else if(trendpft > 0.4){
+		}else if(trendpft > 0.3){
 			return (trendpft+0.25);
 		}else {
-			return (trendpft+0.3);
+			if(buysell.getDaystried() >= 2){
+				return (trendpft+0.1);
+			}else{
+				return (trendpft+0.3);
+			}
 		}
 	}
 
