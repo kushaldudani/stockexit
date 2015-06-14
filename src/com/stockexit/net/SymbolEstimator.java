@@ -275,7 +275,7 @@ public class SymbolEstimator {
 	private boolean sellStock(double curprice, double curprofit, String ismidday, String lasttime) {
 		try{
 			String ssymb = buysell.getSymbol().split("-")[0];
-			OrderDispatcher od = new OrderDispatcher();
+			/*OrderDispatcher od = new OrderDispatcher();
 			od.connect();
 			TradeConfirmation trade = null;
 			if(buysell.getType().equals("Long")){
@@ -294,13 +294,13 @@ public class SymbolEstimator {
 					marketlotmap.get(tokensmap.get(ssymb)), buysell.getExpiry(), buysell.getbudget());
 			}
 			trade = pollTrade(od, ssymb);
-			if(trade != null){
+			if(trade != null){*/
 				buysell.setExited(true);
-				double tradedprice = ((double)(trade.TrdPrice)/(double)100);
-				buysell.setExitprice(tradedprice);
-				//buysell.setExitprice(curprice);
-				//buysell.setProfit(curprofit);
-				buysell.setProfit(getPft(buysell.getEnterprice(), tradedprice, buysell.getType()));
+				//double tradedprice = ((double)(trade.TrdPrice)/(double)100);
+				//buysell.setExitprice(tradedprice);
+				buysell.setExitprice(curprice);
+				buysell.setProfit(curprofit);
+				//buysell.setProfit(getPft(buysell.getEnterprice(), tradedprice, buysell.getType()));
 				int daystried = buysell.getDaystried() + 1;
 				buysell.setDaystried(daystried);
 				String letter = buysell.getType().substring(0, 1);
@@ -311,8 +311,8 @@ public class SymbolEstimator {
 				db.closeSession();
 				LoggerUtil.getLogger().info("Sold - "+ismidday +" - " + buysell.getSymbol() );
 				SendMail.generateAndSendEmail("Successfully squared off - "+ buysell.getSymbol() +"  "+buysell.getType() + 
-						" at price - " + tradedprice+" please verify, enterprice - "+buysell.getEnterprice());
-			}else if(od.getOrderConfirmation(ssymb) != null){
+						" at price - " + buysell.getExitprice()+" please verify, enterprice - "+buysell.getEnterprice());
+			/*}else if(od.getOrderConfirmation(ssymb) != null){
 				updateStock();
 				LoggerUtil.getLogger().info("NotSold but order dispatched- "+ismidday +" - " + buysell.getSymbol() );
 				SendMail.generateAndSendEmail("Tried squaring off - "+ buysell.getSymbol() + 
@@ -322,7 +322,7 @@ public class SymbolEstimator {
 				LoggerUtil.getLogger().info("NotSold connection problem- "+ismidday +" - " + buysell.getSymbol() );
 				SendMail.generateAndSendEmail("Not able to square off - "+ buysell.getSymbol() + 
 						"connection problem. please square off from terminal");
-			}
+			}*/
 			return true;
 		}catch(Exception e){
 			LoggerUtil.getLogger().log(Level.SEVERE, "In SymbolEstimator SellStock failed "+buysell.getSymbol(), e);
