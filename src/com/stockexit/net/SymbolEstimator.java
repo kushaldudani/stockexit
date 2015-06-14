@@ -187,6 +187,33 @@ public class SymbolEstimator {
 		return exitAtEndProfit;
 	}
 	
+	public boolean dummyExit(List<Double> prices, double low, double high, 
+			String lasttime){
+		double curprice = prices.get(prices.size()-1);
+		double enterprice = buysell.getEnterprice();
+		double curprofit = getPft(enterprice,curprice,buysell.getType());
+		LoggerUtil.getLogger().info(buysell.getSymbol() + "  " + lasttime+"  " +curprofit);
+		int size = prices.size();
+		
+		if(lasttime.compareTo("15:10") >= 0){
+			return sellStock(curprice, curprofit, "Endday",lasttime);
+		}else if(size>=3){ 
+			double price1 = prices.get(size-1);
+			double price2 = prices.get(size-2);
+			double price3 = prices.get(size-3);
+			double loss1 = getPft(enterprice,price1,buysell.getType());
+			double loss2 = getPft(enterprice,price2,buysell.getType());
+			double loss3 = getPft(enterprice,price3,buysell.getType());
+			int qty = buysell.getbudget(); 
+			loss1 = loss1*qty; loss2 = loss2*qty; loss3 = loss3*qty;
+			if(loss1 < lossthreshold && 
+					loss2 < lossthreshold && loss3 < lossthreshold){
+				return sellStock(price1, loss1, "Endday",lasttime);
+			}
+		}
+		return false;
+	}
+	
 	private double exitAtStartMax = 0;
 	private long exitAtStartTimer = 0;
 	
@@ -325,11 +352,11 @@ public class SymbolEstimator {
 		int daystring = buysell.getDaystried()+1;
 		double lossthreshold;
 		if(daystring == 1){
-			lossthreshold = -10;
+			lossthreshold = -5;
 		}else if(daystring == 2 || daystring == 3){
-			lossthreshold = -10;
+			lossthreshold = -5;
 		}else{
-			lossthreshold = -10;
+			lossthreshold = -5;
 		}
 		return lossthreshold;
 	}
