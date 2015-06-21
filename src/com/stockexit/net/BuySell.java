@@ -51,6 +51,9 @@ public class BuySell implements Serializable {
     @Column(name = "Nextopenprice")
     private double nextopenprice;
     
+    @Column(name = "Mcase")
+    private int mcase;
+    
 	/**
 	 * @return the symbol
 	 */
@@ -224,6 +227,22 @@ public class BuySell implements Serializable {
 	 */
 	public void setNextopenprice(double nextopenprice) {
 		this.nextopenprice = nextopenprice;
+	}
+
+
+	/**
+	 * @return the mcase
+	 */
+	public int getMcase() {
+		return mcase;
+	}
+
+
+	/**
+	 * @param mcase the mcase to set
+	 */
+	public void setMcase(int mcase) {
+		this.mcase = mcase;
 	}
 
 
