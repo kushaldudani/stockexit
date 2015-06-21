@@ -184,7 +184,7 @@ public class OrderDispatcher {
         if(isLoggedin.get()==0){
         	sendRequest(req.getStruct());
         	long loopstarttime = System.currentTimeMillis();
-        	while((System.currentTimeMillis()-loopstarttime)<1100){
+        	while((System.currentTimeMillis()-loopstarttime)<1300){
         	
         	}
         }

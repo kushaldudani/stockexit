@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 
 import com.stockdata.bpwealth.broadcast.BroadCastManager;
@@ -75,13 +76,13 @@ public class StockExit {
 			}
 		}
 		db.closeSession();
-		
+		final ReentrantLock lock = new ReentrantLock();
 		Map<String,SynQueue<TickData>> queuemap = new HashMap<String,SynQueue<TickData>>();
 		for(BuySell bsell : records){
 			if(bsell.isExited()==false){
 				String sss = bsell.getSymbol().split("-")[0];
 				SynQueue<TickData> qu = new SynQueue<TickData>();
-				new Thread(new ExitWorker(bsell,qu,lastentry)).start();
+				new Thread(new ExitWorker(bsell,qu,lastentry,lock)).start();
 				queuemap.put(sss, qu);
 			}
 		}

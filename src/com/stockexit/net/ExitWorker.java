@@ -3,6 +3,7 @@ package com.stockexit.net;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
 import com.stockdata.bpwealth.broadcast.TickData;
 import com.stockexit.util.LoggerUtil;
@@ -18,13 +19,15 @@ public class ExitWorker implements Runnable {
 	private BuySell buysell;
 	private SynQueue<TickData> qu;
 	private String curdate;
+	private ReentrantLock lock;
 	private List<Double> prices;
 	
 	
-	public ExitWorker(BuySell buysell, SynQueue<TickData> qu, String curdate){
+	public ExitWorker(BuySell buysell, SynQueue<TickData> qu, String curdate, ReentrantLock lock){
 		this.buysell = buysell;
 		this.qu = qu;
 		this.curdate = curdate;
+		this.lock = lock;
 		prices = new ArrayList<Double>();
 		
 	}
@@ -43,7 +46,7 @@ public class ExitWorker implements Runnable {
 		}else{
 			System.exit(1);
 		}
-		SymbolEstimator estimator = new SymbolEstimator(buysell, curdate);
+		SymbolEstimator estimator = new SymbolEstimator(buysell, curdate, lock);
 		boolean sold = false;
 		//intitialwait();
 		while(true){

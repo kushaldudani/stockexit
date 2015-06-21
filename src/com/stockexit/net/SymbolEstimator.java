@@ -2,6 +2,7 @@ package com.stockexit.net;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 
 import com.stockdata.bpwealth.OrderDispatcher;
@@ -14,15 +15,17 @@ public class SymbolEstimator {
 	
 	private BuySell buysell;
 	private String curdate;
+	private ReentrantLock lock;
 	private double lossthreshold;
 	private Map<String, Integer> tokensmap;
 	private Map<Integer, Integer> marketlotmap;
 	
 	//private double stopthreshold;
 	
-	public SymbolEstimator(BuySell buysell, String curdate) {
+	public SymbolEstimator(BuySell buysell, String curdate, ReentrantLock lock) {
 		this.buysell = buysell;
 		this.curdate = curdate;
+		this.lock = lock;
 		this.lossthreshold = getlossthreshold();
 		this.tokensmap = StockExitUtil.buildTokensMap();
 		this.marketlotmap = StockExitUtil.buildMarketLotMap();
@@ -187,7 +190,7 @@ public class SymbolEstimator {
 		return exitAtEndProfit;
 	}
 	
-	private double dummyLocalMax = 0;
+	/*private double dummyLocalMax = 0;
 	private long targetTimer = 0;
 	private int totalticks = 0;
 	
@@ -206,17 +209,17 @@ public class SymbolEstimator {
 		}
 		
 		return 0;
-	}
+	}*/
 	
 	public boolean dummyExit(List<Double> prices, double low, double high, 
 			String lasttime){
 		int size = prices.size();
-		totalticks++;
+		//totalticks++;
 		double curprice = prices.get(size-1);
 		double enterprice = buysell.getEnterprice();
 		double curprofit = getPft(enterprice,curprice,buysell.getType());
 		LoggerUtil.getLogger().info(buysell.getSymbol() + "  " + lasttime+"  " +curprofit);
-		if(curprofit > dummyLocalMax){
+		/*if(curprofit > dummyLocalMax){
 			dummyLocalMax = curprofit;
 			long targetval = getTimerForLocalMax(dummyLocalMax);
 			if(targetval < 100){
@@ -224,11 +227,14 @@ public class SymbolEstimator {
 			}else{
 				targetTimer = targetval + System.currentTimeMillis();
 			}
-		}
+		}*/
 		
-		if((targetTimer>0) && (targetTimer>100) && ((System.currentTimeMillis()-targetTimer)>0)){
+		/*if((targetTimer>0) && (targetTimer>100) && ((System.currentTimeMillis()-targetTimer)>0)){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}else if((targetTimer>0) && (targetTimer<100) && ((totalticks-targetTimer)>=0)){
+			return sellStock(curprice, curprofit, "Endday",lasttime);
+		}*/
+		if(curprofit >= 2){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}else if(lasttime.compareTo("15:00") >= 0){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
@@ -307,9 +313,10 @@ public class SymbolEstimator {
 		}
 	}
 	private boolean sellStock(double curprice, double curprofit, String ismidday, String lasttime) {
+		lock.lock();
 		try{
 			String ssymb = buysell.getSymbol().split("-")[0];
-			/*OrderDispatcher od = new OrderDispatcher();
+			OrderDispatcher od = new OrderDispatcher();
 			od.connect();
 			TradeConfirmation trade = null;
 			if(buysell.getType().equals("Long")){
@@ -328,13 +335,13 @@ public class SymbolEstimator {
 					marketlotmap.get(tokensmap.get(ssymb)), buysell.getExpiry(), buysell.getbudget());
 			}
 			trade = pollTrade(od, ssymb);
-			if(trade != null){*/
+			if(trade != null){
 				buysell.setExited(true);
-				//double tradedprice = ((double)(trade.TrdPrice)/(double)100);
-				//buysell.setExitprice(tradedprice);
-				buysell.setExitprice(curprice);
-				buysell.setProfit(curprofit);
-				//buysell.setProfit(getPft(buysell.getEnterprice(), tradedprice, buysell.getType()));
+				double tradedprice = ((double)(trade.TrdPrice)/(double)100);
+				buysell.setExitprice(tradedprice);
+				//buysell.setExitprice(curprice);
+				//buysell.setProfit(curprofit);
+				buysell.setProfit(getPft(buysell.getEnterprice(), tradedprice, buysell.getType()));
 				int daystried = buysell.getDaystried() + 1;
 				buysell.setDaystried(daystried);
 				String letter = buysell.getType().substring(0, 1);
@@ -346,7 +353,7 @@ public class SymbolEstimator {
 				LoggerUtil.getLogger().info("Sold - "+ismidday +" - " + buysell.getSymbol() );
 				SendMail.generateAndSendEmail("Successfully squared off - "+ buysell.getSymbol() +"  "+buysell.getType() + 
 						" at price - " + buysell.getExitprice()+" please verify, enterprice - "+buysell.getEnterprice());
-			/*}else if(od.getOrderConfirmation(ssymb) != null){
+			}else if(od.getOrderConfirmation(ssymb) != null){
 				updateStock();
 				LoggerUtil.getLogger().info("NotSold but order dispatched- "+ismidday +" - " + buysell.getSymbol() );
 				SendMail.generateAndSendEmail("Tried squaring off - "+ buysell.getSymbol() + 
@@ -356,11 +363,11 @@ public class SymbolEstimator {
 				LoggerUtil.getLogger().info("NotSold connection problem- "+ismidday +" - " + buysell.getSymbol() );
 				SendMail.generateAndSendEmail("Not able to square off - "+ buysell.getSymbol() + 
 						"connection problem. please square off from terminal");
-			}*/
+			}
 			return true;
 		}catch(Exception e){
 			LoggerUtil.getLogger().log(Level.SEVERE, "In SymbolEstimator SellStock failed "+buysell.getSymbol(), e);
-		}
+		}finally { lock.unlock();}
 		updateStock();
 		LoggerUtil.getLogger().info("NotSold connection problem- "+ismidday +" - " + buysell.getSymbol() );
 		SendMail.generateAndSendEmail("Not able to square off - "+ buysell.getSymbol() + 
@@ -370,7 +377,7 @@ public class SymbolEstimator {
 	
 	private TradeConfirmation pollTrade(OrderDispatcher od, String symbol) {
 		long loopstarttime = System.currentTimeMillis();
-    	while(((System.currentTimeMillis()-loopstarttime)<2000) && 
+    	while(((System.currentTimeMillis()-loopstarttime)<1600) && 
     			od.getTradeConfirmation(symbol) == null){
     		intervalwait();
     	}
@@ -386,11 +393,11 @@ public class SymbolEstimator {
 		int daystring = buysell.getDaystried()+1;
 		double lossthreshold;
 		if(daystring == 1){
-			lossthreshold = -5;
+			lossthreshold = -9;
 		}else if(daystring == 2 || daystring == 3){
-			lossthreshold = -5;
+			lossthreshold = -9;
 		}else{
-			lossthreshold = -5;
+			lossthreshold = -9;
 		}
 		return lossthreshold;
 	}
