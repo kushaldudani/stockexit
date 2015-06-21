@@ -187,25 +187,58 @@ public class SymbolEstimator {
 		return exitAtEndProfit;
 	}
 	
+	private double dummyLocalMax = 0;
+	private long targetTimer = 0;
+	private int totalticks = 0;
+	
+	// return time in milliseconds
+	private long getTimerForLocalMax(double dummyLocalMax) {
+		if(dummyLocalMax >= 1){
+			return 4;
+		}else if(dummyLocalMax >= 0.58){
+			return 5;
+		}else if(dummyLocalMax >= 0.4){
+			return 60000;
+		}else if(dummyLocalMax >= 0.22){
+			return 250000;
+		}else if(dummyLocalMax > 0){
+			return 3500000;
+		}
+		
+		return 0;
+	}
+	
 	public boolean dummyExit(List<Double> prices, double low, double high, 
 			String lasttime){
-		double curprice = prices.get(prices.size()-1);
+		int size = prices.size();
+		totalticks++;
+		double curprice = prices.get(size-1);
 		double enterprice = buysell.getEnterprice();
 		double curprofit = getPft(enterprice,curprice,buysell.getType());
 		LoggerUtil.getLogger().info(buysell.getSymbol() + "  " + lasttime+"  " +curprofit);
-		int size = prices.size();
+		if(curprofit > dummyLocalMax){
+			dummyLocalMax = curprofit;
+			long targetval = getTimerForLocalMax(dummyLocalMax);
+			if(targetval < 100){
+				targetTimer = targetval + totalticks;
+			}else{
+				targetTimer = targetval + System.currentTimeMillis();
+			}
+		}
 		
-		if(lasttime.compareTo("15:10") >= 0){
+		if((targetTimer>0) && (targetTimer>100) && ((System.currentTimeMillis()-targetTimer)>0)){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
-		}else if(size>=3){ 
+		}else if((targetTimer>0) && (targetTimer<100) && ((totalticks-targetTimer)>=0)){
+			return sellStock(curprice, curprofit, "Endday",lasttime);
+		}else if(lasttime.compareTo("15:00") >= 0){
+			return sellStock(curprice, curprofit, "Endday",lasttime);
+		}else if(size>=3){ // for intraday huge movement
 			double price1 = prices.get(size-1);
 			double price2 = prices.get(size-2);
 			double price3 = prices.get(size-3);
 			double loss1 = getPft(enterprice,price1,buysell.getType());
 			double loss2 = getPft(enterprice,price2,buysell.getType());
 			double loss3 = getPft(enterprice,price3,buysell.getType());
-			int qty = buysell.getbudget(); 
-			loss1 = loss1*qty; loss2 = loss2*qty; loss3 = loss3*qty;
 			if(loss1 < lossthreshold && 
 					loss2 < lossthreshold && loss3 < lossthreshold){
 				return sellStock(price1, loss1, "Endday",lasttime);
@@ -213,6 +246,7 @@ public class SymbolEstimator {
 		}
 		return false;
 	}
+	
 	
 	private double exitAtStartMax = 0;
 	private long exitAtStartTimer = 0;
@@ -369,6 +403,14 @@ public class SymbolEstimator {
 				Thread.sleep(timetowait-System.currentTimeMillis()+timestamp);
 			} catch (InterruptedException e) {}
 		}
+	}
+
+	public void logg(List<Double> prices, double low, double high,
+			String lasttime) {
+		double curprice = prices.get(prices.size()-1);
+		double enterprice = buysell.getEnterprice();
+		double curprofit = getPft(enterprice,curprice,buysell.getType());
+		LoggerUtil.getLogger().info(buysell.getSymbol() + "  " + lasttime+"  " +curprofit);
 	}
 
 }
