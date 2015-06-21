@@ -233,10 +233,11 @@ public class SymbolEstimator {
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}else if((targetTimer>0) && (targetTimer<100) && ((totalticks-targetTimer)>=0)){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
-		}*/
+		}
 		if(curprofit >= 2){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
-		}else if(lasttime.compareTo("15:00") >= 0){
+		}else*/ 
+			if(lasttime.compareTo("15:00") >= 0){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}else if(size>=3){ // for intraday huge movement
 			double price1 = prices.get(size-1);

@@ -48,6 +48,9 @@ public class BuySell implements Serializable {
     @Column(name = "Closeprice")
     private double closeprice;
    	
+    @Column(name = "Nextopenprice")
+    private double nextopenprice;
+    
 	/**
 	 * @return the symbol
 	 */
@@ -205,6 +208,22 @@ public class BuySell implements Serializable {
 	 */
 	public void setCloseprice(double closeprice) {
 		this.closeprice = closeprice;
+	}
+
+
+	/**
+	 * @return the nextopenprice
+	 */
+	public double getNextopenprice() {
+		return nextopenprice;
+	}
+
+
+	/**
+	 * @param nextopenprice the nextopenprice to set
+	 */
+	public void setNextopenprice(double nextopenprice) {
+		this.nextopenprice = nextopenprice;
 	}
 
 
