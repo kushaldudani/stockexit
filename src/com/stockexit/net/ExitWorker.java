@@ -66,7 +66,7 @@ public class ExitWorker implements Runnable {
 					continue;
 				}
 				prices.add(price);
-				if(sold && lasttime.compareTo("15:10") < 0){
+				if(sold && lasttime.compareTo("15:25") < 0){
 					estimator.logg(prices,low,high,lasttime);
 				}else if(sold){
 					break;

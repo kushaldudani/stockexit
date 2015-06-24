@@ -250,6 +250,9 @@ public class SymbolEstimator {
 				return sellStock(price1, loss1, "Endday",lasttime);
 			}
 		}
+		if(curdate.equals(buysell.getExpiry()) && lasttime.compareTo("14:25") >= 0){
+			return sellStock(curprice, curprofit, "Endday",lasttime);
+		}
 		return false;
 	}
 	
@@ -393,11 +396,11 @@ public class SymbolEstimator {
 		int daystring = buysell.getDaystried()+1;
 		double lossthreshold;
 		if(daystring == 1){
-			lossthreshold = -9;
+			lossthreshold = -10;
 		}else if(daystring == 2 || daystring == 3){
-			lossthreshold = -9;
+			lossthreshold = -10;
 		}else{
-			lossthreshold = -9;
+			lossthreshold = -10;
 		}
 		return lossthreshold;
 	}
