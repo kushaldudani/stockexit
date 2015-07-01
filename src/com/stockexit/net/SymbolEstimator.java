@@ -319,6 +319,8 @@ public class SymbolEstimator {
 		lock.lock();
 		try{
 			String ssymb = buysell.getSymbol().split("-")[0];
+			short underlyingtype = 1;
+			if(ssymb.equals("NIFTY")){underlyingtype = 0;}
 			OrderDispatcher od = new OrderDispatcher();
 			od.connect();
 			TradeConfirmation trade = null;
@@ -328,14 +330,16 @@ public class SymbolEstimator {
 				limitprice100 = roundup(limitprice100);
 				od.sendOrder((short)0, (short)1, 
 					Integer.toString(tokensmap.get(ssymb)), ssymb, limitprice100, 
-					marketlotmap.get(tokensmap.get(ssymb)), buysell.getExpiry(), buysell.getbudget());
+					marketlotmap.get(tokensmap.get(ssymb)), buysell.getExpiry(), buysell.getbudget(),
+					underlyingtype);
 			}else{
 				double limitprice = curprice*(1.005);
 				int limitprice100 = (int) (limitprice*100);
 				limitprice100 = roundup(limitprice100);
 				od.sendOrder((short)0, (short)0, 
 					Integer.toString(tokensmap.get(ssymb)), ssymb, limitprice100, 
-					marketlotmap.get(tokensmap.get(ssymb)), buysell.getExpiry(), buysell.getbudget());
+					marketlotmap.get(tokensmap.get(ssymb)), buysell.getExpiry(), buysell.getbudget(),
+					underlyingtype);
 			}
 			trade = pollTrade(od, ssymb);
 			if(trade != null){

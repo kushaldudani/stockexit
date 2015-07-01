@@ -94,7 +94,7 @@ public class OrderDispatcher {
    
     public synchronized void sendOrder(short requestType,
    		 short side, String token, String symbol,
-   		 int rate, int marketLot, String expiry, int qty)  {
+   		 int rate, int marketLot, String expiry, int qty, short underlyingtype)  {
         try {
             
             //AlgoDB db = new AlgoDB();
@@ -112,7 +112,7 @@ public class OrderDispatcher {
             ord.ScripName = symbol+" "+expiryvals[2]+StockExitUtil.convertMonth(expiryvals[1])+
            		 expiryvals[0].substring(2, 4);
             ord.InstType = (short)0;
-            ord.UnderlyingType = (short)1;
+            ord.UnderlyingType = underlyingtype;
             Calendar cal = new GregorianCalendar(Integer.parseInt(expiryvals[0]), 
            		 Integer.parseInt(expiryvals[1])-1, Integer.parseInt(expiryvals[2]),
            		 14,30,0);
