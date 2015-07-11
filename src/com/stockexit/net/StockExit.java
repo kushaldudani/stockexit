@@ -43,47 +43,35 @@ public class StockExit {
 		DbManager db = new DbManager();
 		db.openSession();
 		List<BuySell> records = db.getBusSells();
-		if(records.size() == 0){
+		List<SecondModel> secondrecords = db.getSmodels();
+		if(records.size() == 0 && secondrecords.size() == 0){
 			LoggerUtil.getLogger().info("No Stocks to exit");
 		    System.exit(1);
 		}
-		/*OrderDispatcher od=null;
-		try {
-			od = new OrderDispatcher();
-			od.connect();
-		} catch (Exception e) {
-			LoggerUtil.getLogger().info("Cannot create the instance of OrderDispatcher");
-		    System.exit(1);
-		}*/
-		
-		for(int ii=1;ii<records.size();ii++){
-			if((records.get(ii).getSymbol().split("-")[0]).
-					equals(records.get(ii-1).getSymbol().split("-")[0])){
-				BuySell prevbs = records.get(ii-1);
-				BuySell curbs = records.get(ii);
-				//prevbs.setDaystried(-1);
-				prevbs.setExited(true);
-				db.insertOrUpdate(prevbs);
-				int prevbudget = prevbs.getbudget();
-				int curbudget = curbs.getbudget();
-				int totalbudget = (prevbudget+curbudget);
-				double newenterprice = ((prevbs.getEnterprice()*prevbudget)+
-						(curbs.getEnterprice()*curbudget))/(totalbudget);
-				curbs.setEnterprice(newenterprice);
-				curbs.setHasbudget(totalbudget);
-				curbs.setDaystried(prevbs.getDaystried());
-				db.insertOrUpdate(curbs);
-			}
-		}
 		db.closeSession();
+		
 		final ReentrantLock lock = new ReentrantLock();
-		Map<String,SynQueue<TickData>> queuemap = new HashMap<String,SynQueue<TickData>>();
+		Map<String,List<SynQueue<TickData>>> queuemap = new HashMap<>();
 		for(BuySell bsell : records){
 			if(bsell.isExited()==false){
 				String sss = bsell.getSymbol().split("-")[0];
 				SynQueue<TickData> qu = new SynQueue<TickData>();
-				new Thread(new ExitWorker(bsell,qu,lastentry,lock)).start();
-				queuemap.put(sss, qu);
+				new Thread(new ExitWorker(bsell,null,qu,lastentry,lock)).start();
+				if(!queuemap.containsKey(sss)){
+					queuemap.put(sss, new ArrayList<SynQueue<TickData>>());
+				}
+				queuemap.get(sss).add(qu);
+			}
+		}
+		for(SecondModel smodel : secondrecords){
+			if(smodel.isExited()==false){
+				String sss = smodel.getSymbol().split("-")[0];
+				SynQueue<TickData> qu = new SynQueue<TickData>();
+				new Thread(new ExitWorker(null,smodel,qu,lastentry,lock)).start();
+				if(!queuemap.containsKey(sss)){
+					queuemap.put(sss, new ArrayList<SynQueue<TickData>>());
+				}
+				queuemap.get(sss).add(qu);
 			}
 		}
 		

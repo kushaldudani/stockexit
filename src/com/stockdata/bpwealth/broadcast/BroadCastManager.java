@@ -24,7 +24,7 @@ import com.stockexit.util.SynQueue;
 
 public class BroadCastManager{
 	
-	public static void mainrun(Map<String,SynQueue<TickData>> queuemap)  {
+	public static void mainrun(Map<String,List<SynQueue<TickData>>> queuemap)  {
 		TimeZone.setDefault(TimeZone.getTimeZone("IST"));
 		
 		/*List<String> dates = readDates();
@@ -63,7 +63,7 @@ public class BroadCastManager{
         this.port = port;
     }
  
-    private void subscribe(List<Integer> tokens, Map<String,SynQueue<TickData>> queuemap) {
+    private void subscribe(List<Integer> tokens, Map<String,List<SynQueue<TickData>>> queuemap) {
     	Calendar cal = Calendar.getInstance(); 
 		String hour = String.format("%02d",cal.get(Calendar.HOUR_OF_DAY));
 		String minute = String.format("%02d",cal.get(Calendar.MINUTE));

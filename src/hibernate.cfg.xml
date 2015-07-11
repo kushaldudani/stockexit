@@ -16,6 +16,7 @@
         <property name="current_session_context_class">thread</property>
           
         <mapping class="com.stockexit.net.BuySell"></mapping>
+        <mapping class="com.stockexit.net.SecondModel"></mapping>
           
   
     </session-factory>  

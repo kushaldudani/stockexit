@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.zip.Inflater;
@@ -19,10 +20,10 @@ import com.stockexit.util.SynQueue;
 public class TickListener implements Runnable{
 	
 	Socket echoSocket;
-	Map<String,SynQueue<TickData>> queuemap;
+	Map<String,List<SynQueue<TickData>>> queuemap;
 	Map<Integer, String> reversetokensmap = null;
 	
-	public TickListener(Socket echoSocket, Map<String,SynQueue<TickData>> queuemap) {
+	public TickListener(Socket echoSocket, Map<String,List<SynQueue<TickData>>> queuemap) {
 		this.echoSocket = echoSocket;
 		this.reversetokensmap = StockExitUtil.buildReverseTokensMap();
 		this.queuemap = queuemap;
@@ -153,7 +154,10 @@ public class TickListener implements Runnable{
     	tdt.setLastprice(watch.getLTP());
     	tdt.setLastqty(watch.Last_Quantity);
     	
-    	(queuemap.get(sss)).enqueue(tdt);
+    	List<SynQueue<TickData>> allqueues = queuemap.get(sss);
+    	for(SynQueue<TickData> quu : allqueues){
+    		quu.enqueue(tdt);
+    	}
     	checklasttime = cal.getTimeInMillis();
     }
     

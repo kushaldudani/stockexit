@@ -42,6 +42,19 @@ private Session session;
 		}
 	}
 	
+	public void insertOrUpdate(SecondModel secondmodel){
+		try{
+			session.beginTransaction();  
+        
+			
+			session.saveOrUpdate(secondmodel);
+			session.getTransaction().commit();
+		}catch(Exception e){
+			session.getTransaction().rollback();
+			LoggerUtil.getLogger().log(Level.SEVERE, "StockExit secondmodel insertorupdate failed", e);
+		}
+	}
+	
 	public List<BuySell> getBusSells() {
 		List<BuySell> records = new ArrayList<BuySell>();
 		try{
@@ -60,12 +73,33 @@ private Session session;
 		}catch(Exception e){
 			session.getTransaction().rollback();
 			LoggerUtil.getLogger().log(Level.SEVERE, "StockExit DbManager getBuySells failed", e);
-			System.exit(1);
-			return null;
+			return records;
 		}
 		return records;
 	}
 	
+	public List<SecondModel> getSmodels() {
+		List<SecondModel> records = new ArrayList<SecondModel>();
+		try{
+		session.beginTransaction();
+		
+		String hql = "Select * from SecondModel where Exited = 0 and Hasbudget > 0 order by Symbol asc";
+	    SQLQuery query = session.createSQLQuery(hql);
+	    query.addEntity(SecondModel.class);
+	    List<Object> objects = query.list();
+	    for(Object o : objects){
+	    	SecondModel pr = (SecondModel) o;
+	    	records.add(pr);
+	    }
+	    
+		session.getTransaction().commit();
+		}catch(Exception e){
+			session.getTransaction().rollback();
+			LoggerUtil.getLogger().log(Level.SEVERE, "StockExit secondmodel getBuySells failed", e);
+			return records;
+		}
+		return records;
+	}
 	
 	public void closeSession(){
 		try{

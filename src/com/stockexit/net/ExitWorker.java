@@ -17,14 +17,17 @@ import com.stockexit.util.SynQueue;
 public class ExitWorker implements Runnable {
 	
 	private BuySell buysell;
+	private SecondModel smodel;
 	private SynQueue<TickData> qu;
 	private String curdate;
 	private ReentrantLock lock;
 	private List<Double> prices;
 	
 	
-	public ExitWorker(BuySell buysell, SynQueue<TickData> qu, String curdate, ReentrantLock lock){
+	public ExitWorker(BuySell buysell, SecondModel smodel, 
+			SynQueue<TickData> qu, String curdate, ReentrantLock lock){
 		this.buysell = buysell;
+		this.smodel = smodel;
 		this.qu = qu;
 		this.curdate = curdate;
 		this.lock = lock;
@@ -46,7 +49,7 @@ public class ExitWorker implements Runnable {
 		}else{
 			System.exit(1);
 		}
-		SymbolEstimator estimator = new SymbolEstimator(buysell, curdate, lock);
+		SymbolEstimator estimator = new SymbolEstimator(buysell, smodel, curdate, lock);
 		boolean sold = false;
 		//intitialwait();
 		while(true){
@@ -62,7 +65,7 @@ public class ExitWorker implements Runnable {
 					low = Double.parseDouble(info.split("/")[1]);
 					price = Double.parseDouble(info.split("/")[0]);
 				}catch(Exception e){
-					LoggerUtil.getLogger().info("***************Broadcast did not give valid result*************"+"Thread - " + buysell.getSymbol());
+					LoggerUtil.getLogger().info("***************Broadcast did not give valid result*************"+"Thread - ");
 					continue;
 				}
 				prices.add(price);
@@ -71,7 +74,7 @@ public class ExitWorker implements Runnable {
 				}else if(sold){
 					break;
 				}else if(lasttime.compareTo("15:28") > 0){
-					estimator.updateStock();
+					LoggerUtil.getLogger().info("Counld not exit stock till end of day");
 					break;
 				}else if(lasttime.compareTo("09:16") >= 0 && lasttime.compareTo("15:28") <= 0){
 					sold = estimator.dummyExit(prices,low,high,lasttime);
@@ -129,7 +132,7 @@ public class ExitWorker implements Runnable {
 			try {
 				Thread.sleep(timetowait-System.currentTimeMillis()+timestamp);
 			} catch (InterruptedException e) {
-				LoggerUtil.getLogger().info("Thread interrrupted in interval wait - "+buysell.getSymbol());
+				LoggerUtil.getLogger().info("Thread interrrupted in interval wait - ");
 			}
 		}
 	}
