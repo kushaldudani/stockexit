@@ -135,6 +135,13 @@ public class SymbolEstimator {
 			return smodel.getHasbudget();
 		}
 	}
+	private double getEntryNextopenprice(){
+		if(buysell != null){
+			return buysell.getNextopenprice();
+		}else {
+			throw new RuntimeException("Operation not supported");
+		}
+	}
 	
 	/*public boolean exitAtMidday(List<Double> prices, double low, double high, 
 			String lasttime, double trend){
@@ -329,7 +336,13 @@ public class SymbolEstimator {
 		}*/
 		if(getEntryMcase() == 2 && getEntryType().equals("Long") && curprofit >= 0.5){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
-		}else if(lasttime.compareTo("15:00") >= 0){
+		}else if(buysell!=null && !getEntrySymbol().equals("NIFTY") && 
+				getSlippage(getEntryNextopenprice(), getEntryEnterprice(), getEntryType()) > 0.3 
+				&& curprofit >= 0.8){
+			return sellStock(curprice, curprofit, "Endday",lasttime);
+		}else if(getEntrySymbol().equals("NIFTY") && curprofit < -0.4){
+			return sellStock(curprice, curprofit, "Endday",lasttime);
+		}else if(lasttime.compareTo("15:08") >= 0){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}else if(size>=3){ // for intraday huge movement
 			double price1 = prices.get(size-1);
@@ -347,6 +360,16 @@ public class SymbolEstimator {
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}
 		return false;
+	}
+	
+	private double getSlippage(double entryNextopenprice, double entryEnterprice, String type) {
+		if(type.equals("Long")){
+			double slippage = ((entryEnterprice-entryNextopenprice)/(entryNextopenprice))*100;
+			return slippage;
+		}else{
+			double slippage = ((entryNextopenprice-entryEnterprice)/(entryNextopenprice))*100;
+			return slippage;
+		}
 	}
 	
 	
@@ -393,6 +416,8 @@ public class SymbolEstimator {
 		return exitAtStartProfit;
 	}*/
 	
+	
+
 	private boolean sellStock(double curprice, double curprofit, String ismidday, String lasttime) {
 		lock.lock();
 		try{
