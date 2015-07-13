@@ -53,7 +53,7 @@ public class ExitWorker implements Runnable {
 		boolean sold = false;
 		//intitialwait();
 		while(true){
-			String info = downloader.downloadData(qu, buysell.getType());
+			String info = downloader.downloadData(qu, getEntryType());
 			if(info != null){
 				String lasttime; double high; double low; double price;
 				try{
@@ -113,17 +113,13 @@ public class ExitWorker implements Runnable {
 	}
 
 
-	/*private void intitialwait() {
-		long timestamp = System.currentTimeMillis();
-		int timetowait = (id*2*1000);
-		while(System.currentTimeMillis() < (timestamp+timetowait)){
-			try {
-				Thread.sleep(timetowait-System.currentTimeMillis()+timestamp);
-			} catch (InterruptedException e) {
-				LoggerUtil.getLogger().info("Thread interrrupted in initial wait - "+buysell.getSymbol());
-			}
+	private String getEntryType(){
+		if(buysell != null){
+			return buysell.getType();
+		}else {
+			return smodel.getType();
 		}
-	}*/
+	}
 	
 	private void intervalwait() {
 		long timestamp = System.currentTimeMillis();
