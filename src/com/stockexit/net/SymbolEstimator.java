@@ -7,6 +7,7 @@ import java.util.logging.Level;
 
 import com.stockdata.bpwealth.OrderDispatcher;
 import com.stockdata.bpwealth.TradeConfirmation;
+import com.stockdata.bpwealth.broadcast.TickListener;
 import com.stockexit.util.LoggerUtil;
 import com.stockexit.util.SendMail;
 import com.stockexit.util.StockExitUtil;
@@ -339,6 +340,12 @@ public class SymbolEstimator {
 		}else if(buysell!=null && !getEntrySymbol().equals("NIFTY") && 
 				getSlippage(getEntryNextopenprice(), getEntryEnterprice(), getEntryType()) > 0.3 
 				&& curprofit >= 0.8){
+			return sellStock(curprice, curprofit, "Endday",lasttime);
+		}else if(!getEntrySymbol().equals("NIFTY") && curprofit >= 0.65 
+				&& TickListener.getNiftyUppercent() <= -0.25 && getEntryType().equals("Long")){
+			return sellStock(curprice, curprofit, "Endday",lasttime);
+		}else if(!getEntrySymbol().equals("NIFTY") && curprofit >= 0.65
+				&& TickListener.getNiftyUppercent() >= 0.25 && getEntryType().equals("Short")){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}else if(getEntrySymbol().equals("NIFTY") && curprofit < -0.4){
 			return sellStock(curprice, curprofit, "Endday",lasttime);

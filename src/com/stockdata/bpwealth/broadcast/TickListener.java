@@ -22,6 +22,7 @@ public class TickListener implements Runnable{
 	Socket echoSocket;
 	Map<String,List<SynQueue<TickData>>> queuemap;
 	Map<Integer, String> reversetokensmap = null;
+	static double niftyuppercent = 0;
 	
 	public TickListener(Socket echoSocket, Map<String,List<SynQueue<TickData>>> queuemap) {
 		this.echoSocket = echoSocket;
@@ -49,7 +50,7 @@ public class TickListener implements Runnable{
        		   hour = String.format("%02d",cal.get(Calendar.HOUR_OF_DAY));
        		   minute = String.format("%02d",cal.get(Calendar.MINUTE));
        		   lasttime = hour+":"+minute;
-       		   if((cal.getTimeInMillis()-checklasttime) > 45000){
+       		   if((cal.getTimeInMillis()-checklasttime) > 15000){
        			   LoggerUtil.getLogger().log(Level.SEVERE, "TickListener socket no more listeneing");
        			   break;
        		   }
@@ -158,8 +159,19 @@ public class TickListener implements Runnable{
     	for(SynQueue<TickData> quu : allqueues){
     		quu.enqueue(tdt);
     	}
+    	if(sss.equals("NIFTY") && watch.getOpen() > 0){
+    		double niftyup = (((watch.getLTP()-watch.getOpen())/watch.getOpen())*100);
+    		setNiftyUppercent(niftyup);
+    	}
     	checklasttime = cal.getTimeInMillis();
     }
     
+    private static synchronized void setNiftyUppercent(double niftyup){
+    	niftyuppercent = niftyup;
+    }
+    
+    public static synchronized double getNiftyUppercent(){
+    	return niftyuppercent;
+    }
     
 }

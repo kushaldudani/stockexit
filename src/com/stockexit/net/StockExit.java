@@ -74,6 +74,9 @@ public class StockExit {
 				queuemap.get(sss).add(qu);
 			}
 		}
+		if(!queuemap.containsKey("NIFTY")){
+			queuemap.put("NIFTY", new ArrayList<SynQueue<TickData>>());
+		}
 		
 		BroadCastManager.mainrun(queuemap);
 	}
