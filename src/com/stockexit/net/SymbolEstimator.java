@@ -347,7 +347,7 @@ public class SymbolEstimator {
 		}else if(!getEntrySymbol().equals("NIFTY") && curprofit >= 0.8
 				&& TickListener.getNiftyUppercent() >= -0.15 && getEntryType().equals("Short")){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
-		}else if(getEntrySymbol().equals("NIFTY") && curprofit < -0.4){
+		}else if(getEntrySymbol().equals("NIFTY") && curprofit < -0.6){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}else if(lasttime.compareTo("15:08") >= 0){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
