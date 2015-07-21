@@ -315,11 +315,11 @@ public class SymbolEstimator {
 	public boolean dummyExit(List<Double> prices, double low, double high, 
 			String lasttime){
 		int size = prices.size();
-		//totalticks++;
+		String sss = getEntrySymbol().split("-")[0];
 		double curprice = prices.get(size-1);
 		double enterprice = getEntryEnterprice();
 		double curprofit = getPft(enterprice,curprice,getEntryType());
-		LoggerUtil.getLogger().info(getEntrySymbol() + "  " + lasttime+"  " +curprofit);
+		LoggerUtil.getLogger().info(sss + "  " + lasttime+"  " +curprofit);
 		/*if(curprofit > dummyLocalMax){
 			dummyLocalMax = curprofit;
 			long targetval = getTimerForLocalMax(dummyLocalMax);
@@ -337,17 +337,17 @@ public class SymbolEstimator {
 		}*/
 		if(getEntryMcase() == 2 && getEntryType().equals("Long") && curprofit >= 0.5){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
-		}else if(buysell!=null && !getEntrySymbol().equals("NIFTY") && 
+		}else if(buysell!=null && !sss.equals("NIFTY") && 
 				getSlippage(getEntryNextopenprice(), getEntryEnterprice(), getEntryType()) > 0.2 
 				&& curprofit >= 0.8){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
-		}else if(!getEntrySymbol().equals("NIFTY") && curprofit >= 0.8 
+		}else if(!sss.equals("NIFTY") && curprofit >= 0.8 
 				&& TickListener.getNiftyUppercent() <= 0.15 && getEntryType().equals("Long")){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
-		}else if(!getEntrySymbol().equals("NIFTY") && curprofit >= 0.8
+		}else if(!sss.equals("NIFTY") && curprofit >= 0.8
 				&& TickListener.getNiftyUppercent() >= -0.15 && getEntryType().equals("Short")){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
-		}else if(getEntrySymbol().equals("NIFTY") && curprofit < -0.6){
+		}else if(sss.equals("NIFTY") && curprofit < -0.6){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}else if(lasttime.compareTo("15:08") >= 0){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
