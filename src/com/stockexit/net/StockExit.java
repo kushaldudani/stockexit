@@ -9,8 +9,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
@@ -55,6 +57,11 @@ public class StockExit {
 		for(BuySell bsell : records){
 			if(bsell.isExited()==false){
 				String sss = bsell.getSymbol().split("-")[0];
+				if(!sss.equals("NIFTY") && bsell.getType().equals("Long")){
+					setLongEntry(sss);
+				}else if(!sss.equals("NIFTY") && bsell.getType().equals("Short")){
+					setShortEntry(sss);
+				}
 				SynQueue<TickData> qu = new SynQueue<TickData>();
 				new Thread(new ExitWorker(bsell,null,qu,lastentry,lock)).start();
 				if(!queuemap.containsKey(sss)){
@@ -66,6 +73,11 @@ public class StockExit {
 		for(SecondModel smodel : secondrecords){
 			if(smodel.isExited()==false){
 				String sss = smodel.getSymbol().split("-")[0];
+				if(!sss.equals("NIFTY") && smodel.getType().equals("Long")){
+					setLongEntry(sss);
+				}else if(!sss.equals("NIFTY") && smodel.getType().equals("Short")){
+					setShortEntry(sss);
+				}
 				SynQueue<TickData> qu = new SynQueue<TickData>();
 				new Thread(new ExitWorker(null,smodel,qu,lastentry,lock)).start();
 				if(!queuemap.containsKey(sss)){
@@ -109,6 +121,32 @@ public class StockExit {
 			} catch (IOException e) {}
 		}
 		return dates;
+	}
+	
+	private static Set<String> longentry = new HashSet<String>();
+	private static Set<String> shortentry = new HashSet<String>();
+	public synchronized static void setLongEntry(String symb){
+		try{
+		longentry.add(symb);
+		}catch(Exception e){}
+	}
+	public synchronized static void setShortEntry(String symb){
+		try{
+		shortentry.add(symb);
+		}catch(Exception e){}
+	}
+	public synchronized static void removeShortEntry(String symb){
+		try{
+		shortentry.remove(symb);
+		}catch(Exception e){}
+	}
+	public synchronized static void removeLongEntry(String symb){
+		try{
+		longentry.remove(symb);
+		}catch(Exception e){}
+	}
+	public synchronized static int getLongShortDiff(){
+		return Math.abs((longentry.size()-shortentry.size()));
 	}
 
 }

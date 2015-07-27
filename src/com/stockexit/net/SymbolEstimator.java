@@ -61,6 +61,7 @@ public class SymbolEstimator {
 				db.insertOrUpdate(buysell);
 				db.closeSession();
 				LoggerUtil.getLogger().info("Sold - "+ismidday +" - " + buysell.getSymbol() );
+				removeLongShort(buysell.getSymbol().split("-")[0], buysell.getType());
 			}else{
 				smodel.setExited(true);
 				double tradedprice = ((double)(trade.TrdPrice)/(double)100);
@@ -75,9 +76,17 @@ public class SymbolEstimator {
 				db.insertOrUpdate(smodel);
 				db.closeSession();
 				LoggerUtil.getLogger().info("Sold - "+ismidday +" - " + smodel.getSymbol() );
+				removeLongShort(smodel.getSymbol().split("-")[0], smodel.getType());
 			}
 		}catch(Exception e){
 			LoggerUtil.getLogger().log(Level.SEVERE, "In SymbolEstimator UpdateStock failed", e);
+		}
+	}
+	private void removeLongShort(String sss, String type){
+		if(type.equals("Long") && !sss.equals("NIFTY")){
+			StockExit.removeLongEntry(sss);
+		}else if(type.equals("Short") && !sss.equals("NIFTY")){
+			StockExit.removeShortEntry(sss);
 		}
 	}
 	private double getEntryEnterprice(){
@@ -348,6 +357,8 @@ public class SymbolEstimator {
 				&& TickListener.getNiftyUppercent() >= -0.15 && getEntryType().equals("Short")){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}else if(sss.equals("NIFTY") && curprofit < -0.6){
+			return sellStock(curprice, curprofit, "Endday",lasttime);
+		}else if(sss.equals("NIFTY") && curprofit >= 0.25 && StockExit.getLongShortDiff() == 0){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}else if(lasttime.compareTo("15:08") >= 0){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
