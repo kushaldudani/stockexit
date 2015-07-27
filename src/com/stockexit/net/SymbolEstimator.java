@@ -358,7 +358,7 @@ public class SymbolEstimator {
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}else if(sss.equals("NIFTY") && curprofit < -0.6){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
-		}else if(sss.equals("NIFTY") && curprofit >= 0.25 && StockExit.getLongShortDiff() == 0){
+		}else if(sss.equals("NIFTY") && curprofit >= 0.6 && StockExit.getLongShortDiff() == 0){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}else if(lasttime.compareTo("15:08") >= 0){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
