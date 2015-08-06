@@ -87,6 +87,9 @@ public class MarketWatchResponse {
     public float getOpen(){
         return (float)(this.Open_Rate/(float)100.00);
     }
+    public float getPreviousClose(){
+        return (float)(this.Previous_Close/(float)100.00);
+    }
     
     public long getVolume(){
     return this.Total_Quantity;

@@ -351,12 +351,12 @@ public class SymbolEstimator {
 				&& curprofit >= 0.8){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}else if(!sss.equals("NIFTY") && curprofit >= 0.8 
-				&& TickListener.getNiftyUppercent() <= 0.15 && getEntryType().equals("Long")){
+				&& getNiftyUpPercent() <= 0 && getEntryType().equals("Long")){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}else if(!sss.equals("NIFTY") && curprofit >= 0.8
-				&& TickListener.getNiftyUppercent() >= -0.15 && getEntryType().equals("Short")){
+				&& getNiftyUpPercent() >= 0 && getEntryType().equals("Short")){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
-		}else if(sss.equals("NIFTY") && curprofit < -0.6){
+		}else if(sss.equals("NIFTY") && curprofit < -0.75){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}else if(sss.equals("NIFTY") && curprofit >= 0.6 && StockExit.getLongShortDiff() == 0){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
@@ -378,6 +378,14 @@ public class SymbolEstimator {
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}
 		return false;
+	}
+	
+	private double getNiftyUpPercent(){
+		if(buysell!=null){
+			return TickListener.getNiftyUppercent();
+		}else{
+			return TickListener.getNiftyUpFromClosepercent();
+		}
 	}
 	
 	private double getSlippage(double entryNextopenprice, double entryEnterprice, String type) {
