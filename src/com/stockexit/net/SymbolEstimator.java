@@ -300,8 +300,8 @@ public class SymbolEstimator {
 		return exitAtEndProfit;
 	}*/
 	
-	/*private double dummyLocalMax = 0;
-	private long targetTimer = 0;
+	private double dummyLocalMax = 0;
+	/*private long targetTimer = 0;
 	private int totalticks = 0;
 	
 	// return time in milliseconds
@@ -329,15 +329,15 @@ public class SymbolEstimator {
 		double enterprice = getEntryEnterprice();
 		double curprofit = getPft(enterprice,curprice,getEntryType());
 		LoggerUtil.getLogger().info(sss + "  " + lasttime+"  " +curprofit);
-		/*if(curprofit > dummyLocalMax){
+		if(curprofit > dummyLocalMax){
 			dummyLocalMax = curprofit;
-			long targetval = getTimerForLocalMax(dummyLocalMax);
+			/*long targetval = getTimerForLocalMax(dummyLocalMax);
 			if(targetval < 100){
 				targetTimer = targetval + totalticks;
 			}else{
 				targetTimer = targetval + System.currentTimeMillis();
-			}
-		}*/
+			}*/
+		}
 		
 		/*if((targetTimer>0) && (targetTimer>100) && ((System.currentTimeMillis()-targetTimer)>0)){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
@@ -345,6 +345,8 @@ public class SymbolEstimator {
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}*/
 		if(getEntryMcase() == 2 && getEntryType().equals("Long") && curprofit >= 0.5){
+			return sellStock(curprice, curprofit, "Endday",lasttime);
+		}else if(dummyLocalMax >= 1.65 && curprofit >= 0.5 && curprofit < 0.95){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}else if(buysell!=null && !sss.equals("NIFTY") && 
 				getSlippage(getEntryNextopenprice(), getEntryEnterprice(), getEntryType()) > 0.2 
