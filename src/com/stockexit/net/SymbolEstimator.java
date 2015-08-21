@@ -344,7 +344,7 @@ public class SymbolEstimator {
 		}else if((targetTimer>0) && (targetTimer<100) && ((totalticks-targetTimer)>=0)){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}*/
-		if(getEntryMcase() == 2 && getEntryType().equals("Long") && curprofit >= 0.5){
+		if(getEntryMcase() == 2 && getEntryType().equals("Long") && curprofit >= 0.5 && getNiftyUpPercent() <= 0){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}else if(dummyLocalMax >= 1.65 && curprofit >= 0.5 && curprofit < 0.95){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
@@ -514,11 +514,11 @@ public class SymbolEstimator {
 		int daystring = getEntryDaystried()+1;
 		double lossthreshold;
 		if(daystring == 1){
-			lossthreshold = -10;
+			lossthreshold = -4;
 		}else if(daystring == 2 || daystring == 3){
-			lossthreshold = -10;
+			lossthreshold = -4;
 		}else{
-			lossthreshold = -10;
+			lossthreshold = -4;
 		}
 		return lossthreshold;
 	}
