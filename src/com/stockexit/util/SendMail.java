@@ -29,6 +29,7 @@ public class SendMail {
 				generateMailMessage.setFrom(new InternetAddress("escapeplan555@gmail.com"));
 				generateMailMessage.addRecipient(Message.RecipientType.TO, new InternetAddress("kushal.kush12@gmail.com"));
 				generateMailMessage.addRecipient(Message.RecipientType.CC, new InternetAddress("pravesh.dudani@gmail.com"));
+				generateMailMessage.addRecipient(Message.RecipientType.CC, new InternetAddress("agarwa27@gmail.com"));
 				generateMailMessage.setSubject("Notification from EscapePlan");
 				//String emailBody = "Test email by Crunchify.com JavaMail API example. " + "<br><br> Regards, <br>Crunchify Admin";
 				generateMailMessage.setContent(message, "text/html");
