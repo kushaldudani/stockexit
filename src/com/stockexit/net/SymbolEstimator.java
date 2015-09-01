@@ -301,6 +301,7 @@ public class SymbolEstimator {
 	}*/
 	
 	private double dummyLocalMax = 0;
+	private double dummyLocalMin = 0;
 	/*private long targetTimer = 0;
 	private int totalticks = 0;
 	
@@ -338,6 +339,9 @@ public class SymbolEstimator {
 				targetTimer = targetval + System.currentTimeMillis();
 			}*/
 		}
+		if(curprofit < dummyLocalMin){
+			dummyLocalMin = curprofit;
+		}
 		
 		/*if((targetTimer>0) && (targetTimer>100) && ((System.currentTimeMillis()-targetTimer)>0)){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
@@ -346,9 +350,11 @@ public class SymbolEstimator {
 		}*/
 		if(getEntryMcase() == 2 && getEntryType().equals("Long") && curprofit >= 0.5 && getNiftyUpPercent() <= 0){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
-		}else if(curprofit >= 2.4){
+		}else if(curprofit >= 2.5 ){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}else if(dummyLocalMax >= 1.6 && curprofit >= 0.5 && curprofit < 0.95){
+			return sellStock(curprice, curprofit, "Endday",lasttime);
+		}else if(dummyLocalMin < -1.5 && curprofit >= 0){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}else if(buysell!=null && !sss.equals("NIFTY") && 
 				getSlippage(getEntryNextopenprice(), getEntryEnterprice(), getEntryType()) > 0.2 
@@ -364,7 +370,7 @@ public class SymbolEstimator {
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}else if(sss.equals("NIFTY") && curprofit >= 0.6 && StockExit.getLongShortDiff() == 0){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
-		}else if(lasttime.compareTo("15:08") >= 0){
+		}else if(lasttime.compareTo("15:01") >= 0){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}else if(size>=3){ // for intraday huge movement
 			double price1 = prices.get(size-1);
@@ -378,7 +384,7 @@ public class SymbolEstimator {
 				return sellStock(price1, loss1, "Endday",lasttime);
 			}
 		}
-		if(curdate.equals(getEntryExpiry()) && lasttime.compareTo("14:08") >= 0){
+		if(curdate.equals(getEntryExpiry()) && lasttime.compareTo("14:01") >= 0){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}
 		return false;
