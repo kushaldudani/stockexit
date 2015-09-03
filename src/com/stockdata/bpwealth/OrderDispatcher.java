@@ -7,9 +7,11 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.ExecutorService;
@@ -51,7 +53,7 @@ public class OrderDispatcher {
     private ExchangeConfirmation item=null;
     //private TradeConfirmation trade=null;
     //private String symbol;
-    private Map<String, TradeConfirmation> trademap = new HashMap<String, TradeConfirmation>();
+    private Map<String, List<TradeConfirmation>> trademap = new HashMap<>();
     private Map<Integer, String> reversetokensmap = null;
     private String password = null;
     private AtomicInteger isLoggedin = new AtomicInteger(0);
@@ -70,7 +72,7 @@ public class OrderDispatcher {
     }
     
     
-    public synchronized TradeConfirmation getTradeConfirmation(String symbol){
+    public synchronized List<TradeConfirmation> getTradeConfirmation(String symbol){
     	if(trademap.containsKey(symbol)){
     		return trademap.get(symbol);
     	}
@@ -89,7 +91,10 @@ public class OrderDispatcher {
     }
     
     private synchronized void setTradeConfirmation(String symbol, TradeConfirmation trade){
-    	trademap.put(symbol, trade);
+    	if(!trademap.containsKey(symbol)){
+    		trademap.put(symbol, new ArrayList<TradeConfirmation>());
+    	}
+    	trademap.get(symbol).add(trade);
     }
    
     public synchronized void sendOrder(short requestType,

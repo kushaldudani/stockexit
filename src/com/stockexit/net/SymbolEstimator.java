@@ -45,11 +45,10 @@ public class SymbolEstimator {
 			return profit;
 		}
 	}
-	private void updateStock(TradeConfirmation trade, String lasttime, String ismidday){
+	private void updateStock(double tradedprice, String lasttime, String ismidday){
 		try{
 			if(buysell!=null){
 				buysell.setExited(true);
-				double tradedprice = ((double)(trade.TrdPrice)/(double)100);
 				buysell.setExitprice(tradedprice);
 				buysell.setProfit(getPft(buysell.getEnterprice(), tradedprice, buysell.getType()));
 				int daystried = buysell.getDaystried() + 1;
@@ -64,7 +63,6 @@ public class SymbolEstimator {
 				removeLongShort(buysell.getSymbol().split("-")[0], buysell.getType());
 			}else{
 				smodel.setExited(true);
-				double tradedprice = ((double)(trade.TrdPrice)/(double)100);
 				smodel.setExitprice(tradedprice);
 				smodel.setProfit(getPft(smodel.getEnterprice(), tradedprice, smodel.getType()));
 				int daystried = smodel.getDaystried() + 1;
@@ -352,18 +350,18 @@ public class SymbolEstimator {
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}else if(curprofit >= 2.5 ){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
-		}else if(dummyLocalMax >= 1.6 && curprofit >= 0.5 && curprofit < 0.95){
+		}else if(dummyLocalMax >= 1.5 && curprofit >= 0.25 && curprofit < 0.5){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
-		}else if(dummyLocalMin < -1.5 && curprofit >= 0){
+		}else if(dummyLocalMin < -1.5 && curprofit >= 0.2){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}else if(buysell!=null && !sss.equals("NIFTY") && 
 				getSlippage(getEntryNextopenprice(), getEntryEnterprice(), getEntryType()) > 0.2 
 				&& curprofit >= 0.8){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
-		}else if(!sss.equals("NIFTY") && curprofit >= 0.8 
+		}else if(!sss.equals("NIFTY") && curprofit >= 0.85 
 				&& getNiftyUpPercent() <= 0 && getEntryType().equals("Long")){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
-		}else if(!sss.equals("NIFTY") && curprofit >= 0.8
+		}else if(!sss.equals("NIFTY") && curprofit >= 0.85
 				&& getNiftyUpPercent() >= 0 && getEntryType().equals("Short")){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}else if(sss.equals("NIFTY") && curprofit < -0.75){
@@ -462,37 +460,43 @@ public class SymbolEstimator {
 			if(ssymb.equals("NIFTY")){underlyingtype = 0;}
 			OrderDispatcher od = new OrderDispatcher();
 			od.connect();
-			TradeConfirmation trade = null;
-			if(getEntryType().equals("Long")){
-				double limitprice = curprice*(0.995);
-				int limitprice100 = (int) (limitprice*100);
-				limitprice100 = roundup(limitprice100);
-				od.sendOrder((short)0, (short)1, 
-					Integer.toString(tokensmap.get(ssymb)), ssymb, limitprice100, 
-					marketlotmap.get(tokensmap.get(ssymb)), getEntryExpiry(), getEntryBudget(),
-					underlyingtype);
-			}else{
-				double limitprice = curprice*(1.005);
-				int limitprice100 = (int) (limitprice*100);
-				limitprice100 = roundup(limitprice100);
-				od.sendOrder((short)0, (short)0, 
-					Integer.toString(tokensmap.get(ssymb)), ssymb, limitprice100, 
-					marketlotmap.get(tokensmap.get(ssymb)), getEntryExpiry(), getEntryBudget(),
-					underlyingtype);
+			for(int i=0;i<getEntryBudget();i++){
+				if(getEntryType().equals("Long")){
+					double limitprice = curprice*(0.995);
+					int limitprice100 = (int) (limitprice*100);
+					limitprice100 = roundup(limitprice100);
+					od.sendOrder((short)0, (short)1, 
+							Integer.toString(tokensmap.get(ssymb)), ssymb, limitprice100, 
+							marketlotmap.get(tokensmap.get(ssymb)), getEntryExpiry(), 1,
+							underlyingtype);
+				}else{
+					double limitprice = curprice*(1.005);
+					int limitprice100 = (int) (limitprice*100);
+					limitprice100 = roundup(limitprice100);
+					od.sendOrder((short)0, (short)0, 
+							Integer.toString(tokensmap.get(ssymb)), ssymb, limitprice100, 
+							marketlotmap.get(tokensmap.get(ssymb)), getEntryExpiry(), 1,
+							underlyingtype);
+				}
+				intervalwait();
 			}
+			List<TradeConfirmation> trade = null;
 			trade = pollTrade(od, ssymb);
-			if(trade != null){
-				updateStock(trade, lasttime, ismidday);
+			if(trade != null && trade.size() == getEntryBudget()){
+				double sum=0;
+				int sz = trade.size();
+				for(TradeConfirmation tc : trade){
+					double tradedprice = ((double)(tc.TrdPrice)/(double)100);
+					sum = sum + tradedprice;
+				}
+				double avgtradedprice = (sum/(double)sz);
+				updateStock(avgtradedprice, lasttime, ismidday);
 				SendMail.generateAndSendEmail("Successfully squared off - "+ getEntrySymbol() +"  "+getEntryType() + 
 						" at price - " + getEntryExitprice()+" please verify, enterprice - "+getEntryEnterprice());
-			}else if(od.getOrderConfirmation(ssymb) != null){
+			}else{
 				LoggerUtil.getLogger().info("NotSold but order dispatched- "+ismidday +" - " + getEntrySymbol() );
 				SendMail.generateAndSendEmail("Tried squaring off - "+ getEntrySymbol() + 
 						"but did not get trade confirmation. please square off from terminal");
-			}else{
-				LoggerUtil.getLogger().info("NotSold connection problem- "+ismidday +" - " + getEntrySymbol() );
-				SendMail.generateAndSendEmail("Not able to square off - "+ getEntrySymbol() + 
-						"connection problem. please square off from terminal");
 			}
 			return true;
 		}catch(Exception e){
@@ -504,10 +508,9 @@ public class SymbolEstimator {
 		return true;
 	}
 	
-	private TradeConfirmation pollTrade(OrderDispatcher od, String symbol) {
+	private List<TradeConfirmation> pollTrade(OrderDispatcher od, String symbol) {
 		long loopstarttime = System.currentTimeMillis();
-    	while(((System.currentTimeMillis()-loopstarttime)<1600) && 
-    			od.getTradeConfirmation(symbol) == null){
+    	while(((System.currentTimeMillis()-loopstarttime)<1100)){
     		intervalwait();
     	}
     	return od.getTradeConfirmation(symbol);
