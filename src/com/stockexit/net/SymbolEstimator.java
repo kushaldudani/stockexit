@@ -348,23 +348,23 @@ public class SymbolEstimator {
 		}*/
 		if(getEntryMcase() == 2 && getEntryType().equals("Long") && curprofit >= 0.5 && getNiftyUpPercent() <= 0){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
-		}else if(curprofit >= 2.5 ){
+		}else if(curprofit >= 2.75 ){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
-		}else if(dummyLocalMax >= 1.5 && curprofit >= 0.25 && curprofit < 0.5){
+		}else if(lasttime.compareTo("09:45") >= 0 && dummyLocalMax >= 1.5 && curprofit >= 0.25 && curprofit < 0.5){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
-		}else if(dummyLocalMin < -1.5 && curprofit >= 0.2){
+		}else if(lasttime.compareTo("09:45") >= 0 && dummyLocalMin < -1.5 && curprofit >= 0.2){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}else if(buysell!=null && !sss.equals("NIFTY") && 
 				getSlippage(getEntryNextopenprice(), getEntryEnterprice(), getEntryType()) > 0.2 
 				&& curprofit >= 0.8){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
-		}else if(!sss.equals("NIFTY") && curprofit >= 0.85 
-				&& getNiftyUpPercent() <= 0 && getEntryType().equals("Long")){
+		}else if(lasttime.compareTo("09:45") >= 0 && !sss.equals("NIFTY") && curprofit >= 0.85 
+				&& getNiftyUpPercent() <= -0.1 && getEntryType().equals("Long")){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
-		}else if(!sss.equals("NIFTY") && curprofit >= 0.85
-				&& getNiftyUpPercent() >= 0 && getEntryType().equals("Short")){
+		}else if(lasttime.compareTo("09:45") >= 0 && !sss.equals("NIFTY") && curprofit >= 0.85
+				&& getNiftyUpPercent() >= 0.1 && getEntryType().equals("Short")){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
-		}else if(sss.equals("NIFTY") && curprofit < -0.75){
+		}else if(lasttime.compareTo("09:45") >= 0 && sss.equals("NIFTY") && curprofit < -0.75){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}else if(sss.equals("NIFTY") && curprofit >= 0.6 && StockExit.getLongShortDiff() == 0){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
@@ -525,11 +525,11 @@ public class SymbolEstimator {
 		int daystring = getEntryDaystried()+1;
 		double lossthreshold;
 		if(daystring == 1){
-			lossthreshold = -4;
+			lossthreshold = -3.5;
 		}else if(daystring == 2 || daystring == 3){
-			lossthreshold = -4;
+			lossthreshold = -3.5;
 		}else{
-			lossthreshold = -4;
+			lossthreshold = -3.5;
 		}
 		return lossthreshold;
 	}
