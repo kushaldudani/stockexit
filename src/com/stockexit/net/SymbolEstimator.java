@@ -346,7 +346,7 @@ public class SymbolEstimator {
 		}else if((targetTimer>0) && (targetTimer<100) && ((totalticks-targetTimer)>=0)){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}*/
-		if(getEntryMcase() == 2 && getEntryType().equals("Long") && curprofit >= 0.5 && getNiftyUpPercent() <= 0){
+		if(getEntryMcase() == 2 && getEntryType().equals("Long") && curprofit >= 0.5 && getNiftyUpPercent() < 0){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}else if(curprofit >= 2.75 ){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
