@@ -69,9 +69,10 @@ public class ExitWorker implements Runnable {
 					continue;
 				}
 				prices.add(price);
-				if(sold && lasttime.compareTo("15:25") < 0){
-					estimator.logg(prices,low,high,lasttime);
-				}else if(sold){
+				//if(sold && lasttime.compareTo("15:25") < 0){
+				//	estimator.logg(prices,low,high,lasttime);
+				//}else 
+				if(sold){
 					break;
 				}else if(lasttime.compareTo("15:28") > 0){
 					LoggerUtil.getLogger().info("Counld not exit stock till end of day");

@@ -93,7 +93,7 @@ public class SymbolEstimator {
 				db.closeSession();
 				LoggerUtil.getLogger().info("Sold - "+ismidday +" - " + smodel.getSymbol() );
 				removeLongShort(sss, smodel.getType());
-				if(sss.equals("NIFTY")&&qyy < getEntryBudget()){
+				if(sss.equals("NIFTY")&&!smodel.isExited()){
 					new Thread(new ExitWorker(null,smodel,qu,curdate,lock)).start();
 				}
 			}
