@@ -57,11 +57,11 @@ public class StockExit {
 		for(BuySell bsell : records){
 			if(bsell.isExited()==false){
 				String sss = bsell.getSymbol().split("-")[0];
-				if(!sss.equals("NIFTY") && bsell.getType().equals("Long")){
+				/*if(!sss.equals("NIFTY") && bsell.getType().equals("Long")){
 					setLongEntry(sss);
 				}else if(!sss.equals("NIFTY") && bsell.getType().equals("Short")){
 					setShortEntry(sss);
-				}
+				}*/
 				SynQueue<TickData> qu = new SynQueue<TickData>();
 				new Thread(new ExitWorker(bsell,null,qu,lastentry,lock)).start();
 				if(!queuemap.containsKey(sss)){

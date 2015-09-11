@@ -49,7 +49,7 @@ public class ExitWorker implements Runnable {
 		}else{
 			System.exit(1);
 		}
-		SymbolEstimator estimator = new SymbolEstimator(buysell, smodel, curdate, lock);
+		SymbolEstimator estimator = new SymbolEstimator(buysell, smodel, curdate, lock, qu);
 		boolean sold = false;
 		//intitialwait();
 		while(true){
