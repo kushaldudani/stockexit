@@ -352,16 +352,16 @@ public class SymbolEstimator {
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}else if(lasttime.compareTo("09:45") >= 0 && dummyLocalMax >= 1.5 && curprofit >= 0.25 && curprofit < 0.5){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
-		}else if(lasttime.compareTo("09:45") >= 0 && dummyLocalMin < -1.5 && curprofit >= 0.2){
+		}else if(lasttime.compareTo("09:45") >= 0 && dummyLocalMin < -1.8 && curprofit >= 0.25){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}else if(buysell!=null && !sss.equals("NIFTY") && 
 				getSlippage(getEntryNextopenprice(), getEntryEnterprice(), getEntryType()) > 0.2 
 				&& curprofit >= 0.8){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
-		}else if(lasttime.compareTo("09:45") >= 0 && !sss.equals("NIFTY") && curprofit >= 0.85 
+		}else if(lasttime.compareTo("09:45") >= 0 && !sss.equals("NIFTY") && curprofit >= 0.95 
 				&& getNiftyUpPercent() <= -0.1 && getEntryType().equals("Long")){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
-		}else if(lasttime.compareTo("09:45") >= 0 && !sss.equals("NIFTY") && curprofit >= 0.85
+		}else if(lasttime.compareTo("09:45") >= 0 && !sss.equals("NIFTY") && curprofit >= 0.95
 				&& getNiftyUpPercent() >= 0.1 && getEntryType().equals("Short")){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}else if(lasttime.compareTo("09:45") >= 0 && sss.equals("NIFTY") && curprofit < -0.75){
