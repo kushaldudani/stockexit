@@ -387,9 +387,13 @@ public class SymbolEstimator {
 			return sellStock(curprice, curprofit, "Endday",lasttime, getEntryBudget());
 		}else if(lasttime.compareTo("09:45") >= 0 && sss.equals("NIFTY") && curprofit < -0.75){
 			return sellStock(curprice, curprofit, "Endday",lasttime, getEntryBudget());
-		}else if(sss.equals("NIFTY") && (StockExit.getLongShortDiff()*QUANTITY) < getEntryBudget()){
-			int qyy = (getEntryBudget() - (StockExit.getLongShortDiff()*QUANTITY));
-			return sellStock(curprice, curprofit, "Endday",lasttime, qyy);
+		}else if(sss.equals("NIFTY")){
+			int niftyhedgeqty = getEntryBudget()/getQuantityToBeFired(sss, curprice);
+			if(StockExit.getLongShortDiff() < niftyhedgeqty){
+				int qyy = (niftyhedgeqty - StockExit.getLongShortDiff());
+				qyy = (qyy * getQuantityToBeFired(sss, curprice));
+				return sellStock(curprice, curprofit, "Endday",lasttime, qyy);
+			}
 		}else if(lasttime.compareTo("15:01") >= 0){
 			return sellStock(curprice, curprofit, "Endday",lasttime, getEntryBudget());
 		}else if(size>=3){ // for intraday huge movement
@@ -410,7 +414,20 @@ public class SymbolEstimator {
 		return false;
 	}
 	
-	private static final int QUANTITY = 2;
+	private static final int NIFTYPRINCIPAL = 400000;
+	
+	private int getQuantityToBeFired(String symbol, double price) {
+		int marketlot = marketlotmap.get(tokensmap.get(symbol));
+		double value = (price*marketlot);
+		double principalToBeUsed = NIFTYPRINCIPAL;
+		double factor = principalToBeUsed/value;
+		int lowerint = (int) Math.floor(factor);
+		double decimaldiff = factor - lowerint;
+		if(decimaldiff > 0.6){
+			lowerint = lowerint + 1;
+		}
+		return lowerint;
+	}
 	
 	private double getNiftyUpPercent(){
 		if(buysell!=null){
