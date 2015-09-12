@@ -389,8 +389,9 @@ public class SymbolEstimator {
 			return sellStock(curprice, curprofit, "Endday",lasttime, getEntryBudget());
 		}else if(sss.equals("NIFTY")){
 			int niftyhedgeqty = getEntryBudget()/getQuantityToBeFired(sss, curprice);
-			if(StockExit.getLongShortDiff() < niftyhedgeqty){
-				int qyy = (niftyhedgeqty - StockExit.getLongShortDiff());
+			int logshortdiff = StockExit.getLongShortDiff();
+			if(logshortdiff < niftyhedgeqty){
+				int qyy = (niftyhedgeqty - logshortdiff);
 				qyy = (qyy * getQuantityToBeFired(sss, curprice));
 				return sellStock(curprice, curprofit, "Endday",lasttime, qyy);
 			}
