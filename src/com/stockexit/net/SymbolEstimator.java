@@ -362,6 +362,13 @@ public class SymbolEstimator {
 			dummyLocalMin = curprofit;
 		}
 		
+		if(lasttime.compareTo("15:01") >= 0){
+			return sellStock(curprice, curprofit, "Endday",lasttime, getEntryBudget());
+		}
+		if(curdate.equals(getEntryExpiry()) && lasttime.compareTo("14:01") >= 0){
+			return sellStock(curprice, curprofit, "Endday",lasttime, getEntryBudget());
+		}
+		
 		/*if((targetTimer>0) && (targetTimer>100) && ((System.currentTimeMillis()-targetTimer)>0)){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}else if((targetTimer>0) && (targetTimer<100) && ((totalticks-targetTimer)>=0)){
@@ -395,8 +402,6 @@ public class SymbolEstimator {
 				qyy = (qyy * getQuantityToBeFired(sss, curprice));
 				return sellStock(curprice, curprofit, "Endday",lasttime, qyy);
 			}
-		}else if(lasttime.compareTo("15:01") >= 0){
-			return sellStock(curprice, curprofit, "Endday",lasttime, getEntryBudget());
 		}else if(size>=3){ // for intraday huge movement
 			double price1 = prices.get(size-1);
 			double price2 = prices.get(size-2);
@@ -409,9 +414,7 @@ public class SymbolEstimator {
 				return sellStock(price1, loss1, "Endday",lasttime, getEntryBudget());
 			}
 		}
-		if(curdate.equals(getEntryExpiry()) && lasttime.compareTo("14:01") >= 0){
-			return sellStock(curprice, curprofit, "Endday",lasttime, getEntryBudget());
-		}
+		
 		return false;
 	}
 	
