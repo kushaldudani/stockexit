@@ -392,9 +392,11 @@ public class SymbolEstimator {
 		}else if(lasttime.compareTo("09:45") >= 0 && !sss.equals("NIFTY") && curprofit >= 0.95
 				&& getNiftyUpPercent() >= 0.2 && getEntryType().equals("Short")){
 			return sellStock(curprice, curprofit, "Endday",lasttime, getEntryBudget());
-		}else if(lasttime.compareTo("09:45") >= 0 && sss.equals("NIFTY") && curprofit < -0.75){
-			return sellStock(curprice, curprofit, "Endday",lasttime, getEntryBudget());
-		}else if(sss.equals("NIFTY")){
+		}
+		//else if(lasttime.compareTo("09:45") >= 0 && sss.equals("NIFTY") && curprofit < -0.75){
+		//	return sellStock(curprice, curprofit, "Endday",lasttime, getEntryBudget());
+		//}
+		else if(sss.equals("NIFTY")){
 			int niftyhedgeqty = getEntryBudget()/getQuantityToBeFired(sss, curprice);
 			int logshortdiff = StockExit.getLongShortDiff();
 			if(logshortdiff < niftyhedgeqty){
