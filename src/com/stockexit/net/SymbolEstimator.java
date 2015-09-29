@@ -569,16 +569,11 @@ public class SymbolEstimator {
 	}
 	
 	private double getlossthreshold(){
-		int daystring = getEntryDaystried()+1;
-		double lossthreshold;
-		if(daystring == 1){
-			lossthreshold = -3.5;
-		}else if(daystring == 2 || daystring == 3){
-			lossthreshold = -3.5;
+		if(buysell == null){
+			return -4.5;
 		}else{
-			lossthreshold = -3.5;
+			return -3.5;
 		}
-		return lossthreshold;
 	}
 	
 	private void intervalwait() {

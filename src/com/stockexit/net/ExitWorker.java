@@ -125,9 +125,10 @@ public class ExitWorker implements Runnable {
 	private void intervalwait() {
 		long timestamp = System.currentTimeMillis();
 		int timetowait = (1000);
-		while(System.currentTimeMillis() < (timestamp+timetowait)){
+		long curtimestamp;
+		while((curtimestamp = System.currentTimeMillis()) < (timestamp+timetowait)){
 			try {
-				Thread.sleep(timetowait-System.currentTimeMillis()+timestamp);
+				Thread.sleep(timetowait-curtimestamp+timestamp);
 			} catch (InterruptedException e) {
 				LoggerUtil.getLogger().info("Thread interrrupted in interval wait - ");
 			}
