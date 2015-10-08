@@ -1,5 +1,7 @@
 package com.stockexit.util;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Properties;
 import java.util.logging.Level;
 
@@ -23,6 +25,8 @@ public class SendMail {
 				
 		 
 		//Step2		
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+				Calendar today = Calendar.getInstance();
 				
 				Session getMailSession = Session.getDefaultInstance(mailServerProperties, null);
 				MimeMessage generateMailMessage = new MimeMessage(getMailSession);
@@ -30,7 +34,7 @@ public class SendMail {
 				generateMailMessage.addRecipient(Message.RecipientType.TO, new InternetAddress("kushal.kush12@gmail.com"));
 				generateMailMessage.addRecipient(Message.RecipientType.CC, new InternetAddress("pravesh.dudani@gmail.com"));
 				generateMailMessage.addRecipient(Message.RecipientType.CC, new InternetAddress("agarwa27@gmail.com"));
-				generateMailMessage.setSubject("Notification from EscapePlan");
+				generateMailMessage.setSubject("Notification from EscapePlan "+sdf.format(today.getTime()));
 				//String emailBody = "Test email by Crunchify.com JavaMail API example. " + "<br><br> Regards, <br>Crunchify Admin";
 				generateMailMessage.setContent(message, "text/html");
 				

@@ -412,7 +412,7 @@ public class SymbolEstimator {
 			double loss2 = getPft(enterprice,price2,getEntryType());
 			double loss3 = getPft(enterprice,price3,getEntryType());
 			if(loss1 < lossthreshold && 
-					loss2 < lossthreshold && loss3 < lossthreshold){
+					loss2 < lossthreshold && loss3 < lossthreshold && lasttime.compareTo("09:30") >= 0) {
 				return sellStock(price1, loss1, "Endday",lasttime, getEntryBudget());
 			}
 		}
