@@ -320,7 +320,6 @@ public class SymbolEstimator {
 	}*/
 	
 	private double dummyLocalMax = 0;
-	private double dummyLocalMin = 0;
 	/*private long targetTimer = 0;
 	private int totalticks = 0;
 	
@@ -358,9 +357,6 @@ public class SymbolEstimator {
 				targetTimer = targetval + System.currentTimeMillis();
 			}*/
 		}
-		if(curprofit < dummyLocalMin){
-			dummyLocalMin = curprofit;
-		}
 		
 		if(lasttime.compareTo("15:01") >= 0){
 			return sellStock(curprice, curprofit, "Endday",lasttime, getEntryBudget());
@@ -374,24 +370,28 @@ public class SymbolEstimator {
 		}else if((targetTimer>0) && (targetTimer<100) && ((totalticks-targetTimer)>=0)){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}*/
-		if(getEntryMcase() == 2 && getEntryType().equals("Long") && curprofit >= 0.5 && getNiftyUpPercent() <= -0.2){
-			return sellStock(curprice, curprofit, "Endday",lasttime, getEntryBudget());
-		}else if(curprofit >= 2.75 && getEntryMcase() != 1){
-			return sellStock(curprice, curprofit, "Endday",lasttime, getEntryBudget());
-		}else if(lasttime.compareTo("09:45") >= 0 && dummyLocalMax >= 1.5 && curprofit >= 0.25 && curprofit < 0.5){
-			return sellStock(curprice, curprofit, "Endday",lasttime, getEntryBudget());
-		}else if(lasttime.compareTo("09:45") >= 0 && dummyLocalMin < -1.8 && curprofit >= 0.25){
-			return sellStock(curprice, curprofit, "Endday",lasttime, getEntryBudget());
+		if(lasttime.compareTo("09:45") >= 0 && getEntryMcase() == 2 && getEntryType().equals("Long") && curprofit >= 0.7 && getNiftyUpPercent() <= -0.2){
+			return sellStock(curprice, curprofit, "Endday1",lasttime, getEntryBudget());
+		}else if(curprofit >= 2.9 && getEntryMcase() != 1){
+			return sellStock(curprice, curprofit, "Endday2",lasttime, getEntryBudget());
+		}else if(buysell!=null&&!sss.equals("NIFTY") && lasttime.compareTo("09:45") >= 0 && dummyLocalMax >= 0.95 && curprofit >= -0.8 && curprofit < -1){
+			return sellStock(curprice, curprofit, "Endday3",lasttime, getEntryBudget());
+		}else if(buysell!=null&& lasttime.compareTo("09:45") >= 0 && !sss.equals("NIFTY") && curprofit >= -1.5 && curprofit < -1 
+				&& getNiftyUpPercent() <= -0.75 && getEntryType().equals("Long")){
+			return sellStock(curprice, curprofit, "Endday4",lasttime, getEntryBudget());
+		}else if(buysell!=null&& lasttime.compareTo("09:45") >= 0 && !sss.equals("NIFTY") && curprofit >= -1.5 && curprofit < -1 
+				&& getNiftyUpPercent() >= 0.75 && getEntryType().equals("Short")){
+			return sellStock(curprice, curprofit, "Endday5",lasttime, getEntryBudget());
 		}else if(buysell!=null && !sss.equals("NIFTY") && 
 				getSlippage(getEntryNextopenprice(), getEntryEnterprice(), getEntryType()) > 0.2 
-				&& curprofit >= 0.8){
-			return sellStock(curprice, curprofit, "Endday",lasttime, getEntryBudget());
-		}else if(lasttime.compareTo("09:45") >= 0 && !sss.equals("NIFTY") && curprofit >= 0.95 
+				&& curprofit >= getNiftyBasedProfitThreshold()){
+			return sellStock(curprice, curprofit, "Endday6",lasttime, getEntryBudget());
+		}else if(lasttime.compareTo("09:45") >= 0 && !sss.equals("NIFTY") && curprofit >= getNiftyBasedProfitThreshold() 
 				&& getNiftyUpPercent() <= -0.2 && getEntryType().equals("Long")){
-			return sellStock(curprice, curprofit, "Endday",lasttime, getEntryBudget());
-		}else if(lasttime.compareTo("09:45") >= 0 && !sss.equals("NIFTY") && curprofit >= 0.95
+			return sellStock(curprice, curprofit, "Endday7",lasttime, getEntryBudget());
+		}else if(lasttime.compareTo("09:45") >= 0 && !sss.equals("NIFTY") && curprofit >= getNiftyBasedProfitThreshold()
 				&& getNiftyUpPercent() >= 0.2 && getEntryType().equals("Short")){
-			return sellStock(curprice, curprofit, "Endday",lasttime, getEntryBudget());
+			return sellStock(curprice, curprofit, "Endday8",lasttime, getEntryBudget());
 		}
 		//else if(lasttime.compareTo("09:45") >= 0 && sss.equals("NIFTY") && curprofit < -0.75){
 		//	return sellStock(curprice, curprofit, "Endday",lasttime, getEntryBudget());
@@ -399,7 +399,7 @@ public class SymbolEstimator {
 		else if(sss.equals("NIFTY")){
 			int niftyhedgeqty = getEntryBudget()/getQuantityToBeFired(sss, curprice);
 			int logshortdiff = StockExit.getLongShortDiff();
-			if(logshortdiff < niftyhedgeqty && curprofit > 0){
+			if(logshortdiff < niftyhedgeqty && curprofit > -0.2){
 				int qyy = (niftyhedgeqty - logshortdiff);
 				qyy = (qyy * getQuantityToBeFired(sss, curprice));
 				return sellStock(curprice, curprofit, "Endday",lasttime, qyy);
@@ -412,12 +412,20 @@ public class SymbolEstimator {
 			double loss2 = getPft(enterprice,price2,getEntryType());
 			double loss3 = getPft(enterprice,price3,getEntryType());
 			if(loss1 < lossthreshold && 
-					loss2 < lossthreshold && loss3 < lossthreshold && lasttime.compareTo("09:30") >= 0) {
+					loss2 < lossthreshold && loss3 < lossthreshold && lasttime.compareTo("09:45") >= 0) {
 				return sellStock(price1, loss1, "Endday",lasttime, getEntryBudget());
 			}
 		}
 		
 		return false;
+	}
+	
+	private double getNiftyBasedProfitThreshold(){
+		if(buysell != null){
+			return 1.25;
+		}else{
+			return 0.95;
+		}
 	}
 	
 	private static final int NIFTYPRINCIPAL = 400000;
