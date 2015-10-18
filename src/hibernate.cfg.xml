@@ -17,6 +17,7 @@
           
         <mapping class="com.stockexit.net.BuySell"></mapping>
         <mapping class="com.stockexit.net.SecondModel"></mapping>
+        <mapping class="com.stockexit.net.Newsline"></mapping>
           
   
     </session-factory>  

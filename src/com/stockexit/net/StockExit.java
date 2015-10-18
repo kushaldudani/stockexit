@@ -52,6 +52,7 @@ public class StockExit {
 		}
 		db.closeSession();
 		
+		Set<String> stocksForNews = new HashSet<String>();
 		final ReentrantLock lock = new ReentrantLock();
 		Map<String,List<SynQueue<TickData>>> queuemap = new HashMap<>();
 		for(BuySell bsell : records){
@@ -62,6 +63,7 @@ public class StockExit {
 				}else if(!sss.equals("NIFTY") && bsell.getType().equals("Short")){
 					setShortEntry(sss);
 				}*/
+				stocksForNews.add(sss);
 				SynQueue<TickData> qu = new SynQueue<TickData>();
 				new Thread(new ExitWorker(bsell,null,qu,lastentry,lock)).start();
 				if(!queuemap.containsKey(sss)){
@@ -78,6 +80,7 @@ public class StockExit {
 				}else if(!sss.equals("NIFTY") && smodel.getType().equals("Short")){
 					setShortEntry(sss);
 				}
+				stocksForNews.add(sss);
 				SynQueue<TickData> qu = new SynQueue<TickData>();
 				new Thread(new ExitWorker(null,smodel,qu,lastentry,lock)).start();
 				if(!queuemap.containsKey(sss)){
@@ -89,7 +92,7 @@ public class StockExit {
 		if(!queuemap.containsKey("NIFTY")){
 			queuemap.put("NIFTY", new ArrayList<SynQueue<TickData>>());
 		}
-		
+		new Thread(new NewsCache(stocksForNews, lastentry)).start();
 		BroadCastManager.mainrun(queuemap);
 	}
 	
