@@ -35,6 +35,7 @@ public class StockExit {
 			System.exit(1);
 		}
 		String lastentry = dates.get(dates.size()-1);
+		String secondlastentry = dates.get(dates.size()-2);
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 		Calendar today = Calendar.getInstance();
 		if(!(sdf.format(today.getTime()).equals(lastentry)) ){
@@ -92,7 +93,7 @@ public class StockExit {
 		if(!queuemap.containsKey("NIFTY")){
 			queuemap.put("NIFTY", new ArrayList<SynQueue<TickData>>());
 		}
-		new Thread(new NewsCache(stocksForNews, lastentry)).start();
+		new Thread(new NewsCache(stocksForNews, lastentry, secondlastentry)).start();
 		BroadCastManager.mainrun(queuemap);
 	}
 	

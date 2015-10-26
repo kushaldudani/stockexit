@@ -15,11 +15,13 @@ public class NewsCache implements Runnable {
 	
 	private Set<String> stocks;
 	private String date;
+	private String daybefore;
 	private static Map<String, Integer> newsMap = new HashMap<String, Integer>();
 	
-	public NewsCache(Set<String> stocks, String date) {
+	public NewsCache(Set<String> stocks, String date, String daybefore) {
 		this.stocks = stocks;
 		this.date = date;
+		this.daybefore = daybefore;
 	}
 	
 	private static synchronized void setNewsImportance(String stock, int importance) {
@@ -50,22 +52,28 @@ public class NewsCache implements Runnable {
 				db.openSession();
 				for (String stock : stocks) {
 					List<Newsline> newslist = db.getNewsLines(stock, date);
-					for (Newsline entry : newslist) {
-						if (entry.getSubject().equals("Financial Result Updates")) {
-							setNewsImportance(stock, 1);
-						}
-						if (entry.getSubject().equals("Press Release")) {
-							setNewsImportance(stock, 1);
-						}
-						if (entry.getSubject().contains("result")) {
-							setNewsImportance(stock, 1);
-						}
-					}
+					findNewsImportance(newslist, stock);
+					List<Newsline> newslist2 = db.getNewsLines(stock, daybefore);
+					findNewsImportance(newslist2, stock);
 				}
 			} catch (Exception e) {
 				LoggerUtil.getLogger().log(Level.SEVERE, "Exception in NewsCache", e);
 			}finally {
 				if(db!=null){db.closeSession();}
+			}
+		}
+	}
+	
+	private void findNewsImportance(List<Newsline> newslist, String stock) {
+		for (Newsline entry : newslist) {
+			if (entry.getSubject().equals("Financial Result Updates")) {
+				setNewsImportance(stock, 1);
+			}
+			if (entry.getSubject().equals("Press Release")) {
+				setNewsImportance(stock, 1);
+			}
+			if (entry.getSubject().contains("result")) {
+				setNewsImportance(stock, 1);
 			}
 		}
 	}
