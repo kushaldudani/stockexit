@@ -435,6 +435,7 @@ public class SymbolEstimator {
 		if(decimaldiff > 0.6){
 			lowerint = lowerint + 1;
 		}
+		if(lowerint == 0){lowerint = 1;}
 		return lowerint;
 	}
 	
