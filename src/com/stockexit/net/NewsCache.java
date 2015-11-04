@@ -44,7 +44,7 @@ public class NewsCache implements Runnable {
 				String hour = String.format("%02d", cal.get(Calendar.HOUR_OF_DAY));
 				String minute = String.format("%02d", cal.get(Calendar.MINUTE));
 				String lasttime = hour + ":" + minute;
-				if (lasttime.compareTo("14:25") >= 0) {
+				if (lasttime.compareTo("14:50") >= 0) {
 					break;
 				}
 				intervalwait();
@@ -73,6 +73,36 @@ public class NewsCache implements Runnable {
 				setNewsImportance(stock, 1);
 			}
 			if (entry.getSubject().contains("result")) {
+				setNewsImportance(stock, 1);
+			}
+			if (entry.getSubject().contains("Sales")) {
+				setNewsImportance(stock, 1);
+			}
+			if (entry.getSubject().contains("sale")) {
+				setNewsImportance(stock, 1);
+			}
+			if (entry.getSubject().contains("Sell")) {
+				setNewsImportance(stock, 1);
+			}
+			if (entry.getSubject().contains("numbers")) {
+				setNewsImportance(stock, 1);
+			}
+			if (entry.getSubject().contains("announce")) {
+				setNewsImportance(stock, 1);
+			}
+			if (entry.getSubject().contains("approval")) {
+				setNewsImportance(stock, 1);
+			}
+			if (entry.getSubject().contains("launch")) {
+				setNewsImportance(stock, 1);
+			}
+			if (entry.getSubject().contains("increase")) {
+				setNewsImportance(stock, 1);
+			}
+			if (entry.getSubject().contains("high")) {
+				setNewsImportance(stock, 1);
+			}
+			if (entry.getSubject().contains("low")) {
 				setNewsImportance(stock, 1);
 			}
 		}

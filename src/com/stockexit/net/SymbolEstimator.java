@@ -370,8 +370,8 @@ public class SymbolEstimator {
 		}else if((targetTimer>0) && (targetTimer<100) && ((totalticks-targetTimer)>=0)){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}*/
-		if(lasttime.compareTo("09:45") >= 0 && getEntryMcase() == 2 && getEntryType().equals("Long") && curprofit >= 0.7 && getNiftyUpPercent() <= -0.2){
-			return sellStock(curprice, curprofit, "Case2Long",lasttime, getEntryBudget());
+		if(lasttime.compareTo("09:45") >= 0 && dummyLocalMax >= 1.8 && curprofit <= 1){
+			return sellStock(curprice, curprofit, "PullBack",lasttime, getEntryBudget());
 		}else if(curprofit >= 2.85 && getEntryMcase() != 1){
 			return sellStock(curprice, curprofit, "UltimateProfit",lasttime, getEntryBudget());
 		}else if(lasttime.compareTo("09:45") >= 0 && !sss.equals("NIFTY") 
@@ -576,7 +576,7 @@ public class SymbolEstimator {
 		if(buysell == null){
 			return -4.35;
 		}else{
-			return -3.5;
+			return -3;
 		}
 	}
 	
