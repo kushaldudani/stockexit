@@ -36,7 +36,7 @@ public class LoginRequest extends Request{
     public String Reserved1="";
     public String VersionNo;
     public int Reserved2;
-    public String PAN="";
+    public String PAN="ALQPK8383D";
     public byte TwoFactor;
     public byte Reserved3;
     //Size 187 Bytes
