@@ -382,10 +382,10 @@ public class SymbolEstimator {
 				&& curprofit >= getNiftyBasedProfitThreshold()){
 			return sellStock(curprice, curprofit, "SlippageAtEnter",lasttime, getEntryBudget());
 		}else if(lasttime.compareTo("09:30") >= 0 && !sss.equals("NIFTY") && curprofit >= getNiftyBasedProfitThreshold() 
-				&& getNiftyUpPercent() <= -0.2 && getEntryType().equals("Long")){
+				&& (getNiftyUpPercent() <= -0.7||getNiftyDownFromHighPercent() >=0.7) && getEntryType().equals("Long")){
 			return sellStock(curprice, curprofit, "LongNiftyBased",lasttime, getEntryBudget());
 		}else if(lasttime.compareTo("09:30") >= 0 && !sss.equals("NIFTY") && curprofit >= getNiftyBasedProfitThreshold()
-				&& getNiftyUpPercent() >= 0.2 && getEntryType().equals("Short")){
+				&& (getNiftyUpPercent() >= 0.7||getNiftyUpFromLowPercent() >=0.7) && getEntryType().equals("Short")){
 			return sellStock(curprice, curprofit, "ShortNiftyBased",lasttime, getEntryBudget());
 		}
 		//else if(lasttime.compareTo("09:45") >= 0 && sss.equals("NIFTY") && curprofit < -0.75){
@@ -401,13 +401,12 @@ public class SymbolEstimator {
 			}
 		}else if(size>=3){ // for intraday huge movement
 			double price1 = prices.get(size-1);
-			double price2 = prices.get(size-2);
-			double price3 = prices.get(size-3);
+			//double price2 = prices.get(size-2);
+			//double price3 = prices.get(size-3);
 			double loss1 = getPft(enterprice,price1,getEntryType());
-			double loss2 = getPft(enterprice,price2,getEntryType());
-			double loss3 = getPft(enterprice,price3,getEntryType());
-			if(loss1 < lossthreshold && 
-					loss2 < lossthreshold && loss3 < lossthreshold && lasttime.compareTo("09:45") >= 0) {
+			//double loss2 = getPft(enterprice,price2,getEntryType());
+			//double loss3 = getPft(enterprice,price3,getEntryType());
+			if(loss1 < lossthreshold) {
 				return sellStock(price1, loss1, "Stoploss",lasttime, getEntryBudget());
 			}
 		}
@@ -437,6 +436,14 @@ public class SymbolEstimator {
 		}
 		if(lowerint == 0){lowerint = 1;}
 		return lowerint;
+	}
+	
+	private double getNiftyUpFromLowPercent(){
+		return TickListener.getNiftyUpFromLow();
+	}
+	
+	private double getNiftyDownFromHighPercent(){
+		return TickListener.getNiftyDownFromHigh();
 	}
 	
 	private double getNiftyUpPercent(){
@@ -574,18 +581,19 @@ public class SymbolEstimator {
 	
 	private double getlossthreshold(){
 		if(buysell == null){
-			return -4.35;
+			return -2;
 		}else{
-			return -3;
+			return -2;
 		}
 	}
 	
 	private void intervalwait() {
 		long timestamp = System.currentTimeMillis();
 		int timetowait = (500);
-		while(System.currentTimeMillis() < (timestamp+timetowait)){
+		long curtimestamp;
+		while((curtimestamp = System.currentTimeMillis()) < (timestamp+timetowait)){
 			try {
-				Thread.sleep(timetowait-System.currentTimeMillis()+timestamp);
+				Thread.sleep(timetowait-curtimestamp+timestamp);
 			} catch (InterruptedException e) {}
 		}
 	}
