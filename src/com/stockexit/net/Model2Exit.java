@@ -22,11 +22,9 @@ import com.stockdata.bpwealth.broadcast.TickData;
 import com.stockexit.util.LoggerUtil;
 import com.stockexit.util.SynQueue;
 
-
-public class StockExit {
+public class Model2Exit {
 	
-	public static void main(String[] args)  {
-		
+	public static void main(String[] args) {
 		TimeZone.setDefault(TimeZone.getTimeZone("IST"));
 		
 		List<String> dates = readDates();
@@ -45,8 +43,8 @@ public class StockExit {
 		
 		DbManager db = new DbManager();
 		db.openSession();
-		List<BuySell> records = db.getBusSells();
-		if(records.size() == 0){
+		List<SecondModel> secondrecords = db.getSmodels();
+		if(secondrecords.size() == 0){
 			LoggerUtil.getLogger().info("No Stocks to exit");
 		    System.exit(1);
 		}
@@ -55,17 +53,17 @@ public class StockExit {
 		Set<String> stocksForNews = new HashSet<String>();
 		final ReentrantLock lock = new ReentrantLock();
 		Map<String,List<SynQueue<TickData>>> queuemap = new HashMap<>();
-		for(BuySell bsell : records){
-			if(bsell.isExited()==false){
-				String sss = bsell.getSymbol().split("-")[0];
-				/*if(!sss.equals("NIFTY") && bsell.getType().equals("Long")){
+		for(SecondModel smodel : secondrecords){
+			if(smodel.isExited()==false){
+				String sss = smodel.getSymbol().split("-")[0];
+				if(!sss.equals("NIFTY") && smodel.getType().equals("Long")){
 					setLongEntry(sss);
-				}else if(!sss.equals("NIFTY") && bsell.getType().equals("Short")){
+				}else if(!sss.equals("NIFTY") && smodel.getType().equals("Short")){
 					setShortEntry(sss);
-				}*/
+				}
 				stocksForNews.add(sss);
 				SynQueue<TickData> qu = new SynQueue<TickData>();
-				new Thread(new ExitWorker(bsell,null,qu,lastentry,lock)).start();
+				new Thread(new ExitWorker(null,smodel,qu,lastentry,lock)).start();
 				if(!queuemap.containsKey(sss)){
 					queuemap.put(sss, new ArrayList<SynQueue<TickData>>());
 				}
@@ -78,7 +76,6 @@ public class StockExit {
 		new Thread(new NewsCache(stocksForNews, lastentry, secondlastentry)).start();
 		BroadCastManager.mainrun(queuemap);
 	}
-	
 	
 	private static List<String> readDates(){
 		InputStreamReader is = null;
