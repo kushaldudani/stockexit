@@ -109,30 +109,5 @@ public class StockExit {
 		return dates;
 	}
 	
-	private static Set<String> longentry = new HashSet<String>();
-	private static Set<String> shortentry = new HashSet<String>();
-	public synchronized static void setLongEntry(String symb){
-		try{
-		longentry.add(symb);
-		}catch(Exception e){}
-	}
-	public synchronized static void setShortEntry(String symb){
-		try{
-		shortentry.add(symb);
-		}catch(Exception e){}
-	}
-	public synchronized static void removeShortEntry(String symb){
-		try{
-		shortentry.remove(symb);
-		}catch(Exception e){}
-	}
-	public synchronized static void removeLongEntry(String symb){
-		try{
-		longentry.remove(symb);
-		}catch(Exception e){}
-	}
-	public synchronized static int getLongShortDiff(){
-		return Math.abs((longentry.size()-shortentry.size()));
-	}
-
+	
 }

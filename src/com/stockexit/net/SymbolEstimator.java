@@ -103,9 +103,9 @@ public class SymbolEstimator {
 	}
 	private void removeLongShort(String sss, String type){
 		if(type.substring(0, 1).equals("L") && !sss.equals("NIFTY")){
-			StockExit.removeLongEntry(sss);
+			Model2Exit.removeLongEntry(sss);
 		}else if(type.substring(0, 1).equals("S") && !sss.equals("NIFTY")){
-			StockExit.removeShortEntry(sss);
+			Model2Exit.removeShortEntry(sss);
 		}
 	}
 	private double getEntryEnterprice(){
@@ -393,7 +393,7 @@ public class SymbolEstimator {
 		//}
 		else if(sss.equals("NIFTY")){
 			int niftyhedgeqty = getEntryBudget()/getQuantityToBeFired(sss, curprice);
-			int logshortdiff = StockExit.getLongShortDiff();
+			int logshortdiff = Model2Exit.getLongShortDiff();
 			if(logshortdiff < niftyhedgeqty && curprofit > -0.2){
 				int qyy = (niftyhedgeqty - logshortdiff);
 				qyy = (qyy * getQuantityToBeFired(sss, curprice));
