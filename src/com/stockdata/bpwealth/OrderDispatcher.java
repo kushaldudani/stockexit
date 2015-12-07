@@ -174,6 +174,7 @@ public class OrderDispatcher {
     }
     
     public synchronized void connect() throws Exception {
+    	password = StockExitUtil.readPassword();
     	LoginRequest req = new LoginRequest();
 		req.ClientCode = "SLS011";
 		req.ConnType = 2;//1 LAN 2 INTERNET 3 VSAT
