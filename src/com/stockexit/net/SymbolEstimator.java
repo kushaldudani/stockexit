@@ -370,7 +370,7 @@ public class SymbolEstimator {
 		}else if((targetTimer>0) && (targetTimer<100) && ((totalticks-targetTimer)>=0)){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}*/
-		if(lasttime.compareTo("09:45") >= 0 && dummyLocalMax >= 1.8 && curprofit <= 1){
+		if(lasttime.compareTo("09:45") >= 0 && dummyLocalMax >= 2.5 && curprofit <= 1){
 			return sellStock(curprice, curprofit, "PullBack",lasttime, getEntryBudget());
 		}else if(curprofit >= 2.85 && getEntryMcase() != 1){
 			return sellStock(curprice, curprofit, "UltimateProfit",lasttime, getEntryBudget());
