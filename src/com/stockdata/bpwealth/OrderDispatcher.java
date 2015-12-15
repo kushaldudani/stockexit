@@ -184,13 +184,12 @@ public class OrderDispatcher {
 		req.TwoFactor = 1;
 		req.VersionNo = "1.0.0.85";
 		LoggerUtil.getLogger().info(req.toString());
-        sendRequest(req.getStruct());
         
         
         if(isLoggedin.get()==0){
         	sendRequest(req.getStruct());
         	long loopstarttime = System.currentTimeMillis();
-        	while((System.currentTimeMillis()-loopstarttime)<1300){
+        	while((System.currentTimeMillis()-loopstarttime)<1500){
         	
         	}
         }
