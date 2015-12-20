@@ -370,10 +370,8 @@ public class SymbolEstimator {
 		}else if((targetTimer>0) && (targetTimer<100) && ((totalticks-targetTimer)>=0)){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}*/
-		if(lasttime.compareTo("09:45") >= 0 && dummyLocalMax >= 2.5 && curprofit <= 1){
+		if(lasttime.compareTo("09:45") >= 0 && dummyLocalMax >= 2.5 && curprofit <= 1.3){
 			return sellStock(curprice, curprofit, "PullBack",lasttime, getEntryBudget());
-		}else if(curprofit >= 2.85 && getEntryMcase() != 1){
-			return sellStock(curprice, curprofit, "UltimateProfit",lasttime, getEntryBudget());
 		}else if(lasttime.compareTo("09:45") >= 0 && !sss.equals("NIFTY") 
 				&& curprofit >= -2 && curprofit < -1 && NewsCache.getNewsImportance(sss)>0){
 			return sellStock(curprice, curprofit, "NewsCache",lasttime, getEntryBudget());
@@ -412,7 +410,7 @@ public class SymbolEstimator {
 	
 	private double getNiftyBasedProfitThreshold(){
 		if(buysell != null){
-			return 1.25;
+			return 1.55;
 		}else{
 			return 0.95;
 		}
@@ -564,7 +562,7 @@ public class SymbolEstimator {
 	
 	private List<TradeConfirmation> pollTrade(OrderDispatcher od, String symbol) {
 		long loopstarttime = System.currentTimeMillis();
-    	while(((System.currentTimeMillis()-loopstarttime)<1100)){
+    	while(((System.currentTimeMillis()-loopstarttime)<1600)){
     		intervalwait();
     	}
     	return od.getTradeConfirmation(symbol);
@@ -577,9 +575,9 @@ public class SymbolEstimator {
 	
 	private double getlossthreshold(){
 		if(buysell == null){
-			return -2;
+			return -1.9;
 		}else{
-			return -2;
+			return -1.9;
 		}
 	}
 	
