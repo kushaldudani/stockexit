@@ -36,12 +36,13 @@ public class OrderDispatcher {
 	
 	public static void main(String[] args) throws Exception {
 		TimeZone.setDefault(TimeZone.getTimeZone("IST"));
+		System.out.println("sdkjfjsdkfsd");
 		OrderDispatcher connector = new OrderDispatcher();
 		connector.connect();
 		
 		Thread.sleep(2000);
-		//connector.sendOrder((short)0, (short)1, "45239", 
-			//	"GODREJIND", 33600, 1001, "2015-06-25", 1);
+		connector.cancelOrder((short)2, (short)0, "43997", 
+				"INFY", 500, "2016-01-28",1,(short) 1, 1300000005478834L, 15);
 	}
     
    private Socket echoSocket;
@@ -96,6 +97,54 @@ public class OrderDispatcher {
     	}
     	trademap.get(symbol).add(trade);
     }
+    
+    public synchronized void cancelOrder(short requestType, short side, String token, String symbol,
+			int marketlot, String expiry, int qty, short underlyingtype,
+			long exchangeorderid, long orderid) {
+    	try {
+    	String[] expiryvals = expiry.split("-");
+   	 	OrderRequest ord = new OrderRequest();
+        ord.RequestType = requestType;//0 Place 1 modify 2 cancel
+        ord.Segment = 2;
+        ord.side = side;//0 Buy 1 Sell
+        ord.Token = token;
+        String fakesymbol = symbol.replace("_", "-");
+        ord.Symbol = fakesymbol;
+        ord.ScripName = symbol+" "+expiryvals[2]+StockExitUtil.convertMonth(expiryvals[1])+
+       		 expiryvals[0].substring(2, 4);
+        ord.InstType = (short)0;
+        ord.UnderlyingType = underlyingtype;
+        Calendar cal = new GregorianCalendar(Integer.parseInt(expiryvals[0]), 
+       		 Integer.parseInt(expiryvals[1])-1, Integer.parseInt(expiryvals[2]),
+       		 14,30,0);
+        ord.ExpiryDate = getNSESeconds(cal.getTimeInMillis());
+        
+        ord.quantity = qty;
+        ord.DiscQty = qty;
+        ord.PendQty = qty;
+        ord.OldQty = qty;
+        ord.Stoploss = "Y";
+        
+        ord.ProdType = 3;
+        ord.ClientCode = "SLS011";
+        ord.OrderRequesterCode = "SLS011";
+        ord.ProCli = (short)1;
+        
+        ord.OldBrokerID = orderid;
+        ord.ExchOrderID = exchangeorderid;
+        //ord.PendQty = 1;
+        //ord.ExchOrderID = 2015020201731230L;
+        ord.NNFField = 111111111111100L;
+        ord.MarketLot = marketlot;
+        
+        LoggerUtil.getLogger().info("Canceled stoploss order - "+ord);
+        this.sendBytes(ord.getStruct(),true);
+    	} catch (Exception ex) {
+        	LoggerUtil.getLogger().log(Level.SEVERE, "BPConnector cancelorder", 
+            		ex);
+        }
+		
+	}
    
     public synchronized void sendOrder(short requestType,
    		 short side, String token, String symbol,

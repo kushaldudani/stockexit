@@ -172,6 +172,14 @@ public class SymbolEstimator {
 		}
 	}
 	
+	private String getEntryStoplossid(){
+		if(buysell != null){
+			return buysell.getStoplossid();
+		}else {
+			throw new RuntimeException("Operation not supported");
+		}
+	}
+	
 	/*public boolean exitAtMidday(List<Double> prices, double low, double high, 
 			String lasttime, double trend){
 		
@@ -320,6 +328,7 @@ public class SymbolEstimator {
 	}*/
 	
 	private double dummyLocalMax = 0;
+	private double dummyLocalMin = 0;
 	/*private long targetTimer = 0;
 	private int totalticks = 0;
 	
@@ -357,6 +366,9 @@ public class SymbolEstimator {
 				targetTimer = targetval + System.currentTimeMillis();
 			}*/
 		}
+		if(curprofit < dummyLocalMin) {
+			dummyLocalMin = curprofit;
+		}
 		
 		if(lasttime.compareTo("15:01") >= 0){
 			return sellStock(curprice, curprofit, "Endday",lasttime, getEntryBudget());
@@ -385,7 +397,7 @@ public class SymbolEstimator {
 		//else if(lasttime.compareTo("09:45") >= 0 && sss.equals("NIFTY") && curprofit < -0.75){
 		//	return sellStock(curprice, curprofit, "Endday",lasttime, getEntryBudget());
 		//}
-		else if(sss.equals("NIFTY")){
+		/*else if(sss.equals("NIFTY")){
 			int niftyhedgeqty = getEntryBudget()/getQuantityToBeFired(sss, curprice);
 			int logshortdiff = Model2Exit.getLongShortDiff();
 			if(logshortdiff < niftyhedgeqty && curprofit > -0.2){
@@ -403,7 +415,7 @@ public class SymbolEstimator {
 			if(loss1 < lossthreshold) {
 				return sellStock(price1, loss1, "Stoploss",lasttime, getEntryBudget());
 			}
-		}
+		}*/
 		
 		return false;
 	}
@@ -416,9 +428,9 @@ public class SymbolEstimator {
 		}
 	}
 	
-	private static final int NIFTYPRINCIPAL = 400000;
+	//private static final int NIFTYPRINCIPAL = 400000;
 	
-	private int getQuantityToBeFired(String symbol, double price) {
+	/*private int getQuantityToBeFired(String symbol, double price) {
 		int marketlot = marketlotmap.get(tokensmap.get(symbol));
 		double value = (price*marketlot);
 		double principalToBeUsed = NIFTYPRINCIPAL;
@@ -430,7 +442,7 @@ public class SymbolEstimator {
 		}
 		if(lowerint == 0){lowerint = 1;}
 		return lowerint;
-	}
+	}*/
 	
 	private double getNiftyUpFromLowPercent(){
 		return TickListener.getNiftyUpFromLow();
@@ -448,7 +460,7 @@ public class SymbolEstimator {
 		}
 	}
 	
-	private double getSlippage(double entryNextopenprice, double entryEnterprice, String type) {
+	/*private double getSlippage(double entryNextopenprice, double entryEnterprice, String type) {
 		if(type.equals("Long")){
 			double slippage = ((entryEnterprice-entryNextopenprice)/(entryNextopenprice))*100;
 			return slippage;
@@ -456,7 +468,7 @@ public class SymbolEstimator {
 			double slippage = ((entryNextopenprice-entryEnterprice)/(entryNextopenprice))*100;
 			return slippage;
 		}
-	}
+	}*/
 	
 	
 	/*private double exitAtStartMax = 0;
@@ -502,18 +514,37 @@ public class SymbolEstimator {
 		return exitAtStartProfit;
 	}*/
 	
-	
+	private double calculateStoplossprice(){
+		if(getEntryType().equals("Long")){
+			return (getEntryEnterprice() - (getEntryEnterprice()*0.019));
+		}else{
+			return (getEntryEnterprice() + (getEntryEnterprice()*0.019));
+		}
+	}
 
 	private boolean sellStock(double curprice, double curprofit, String ismidday, String lasttime, int qyy) {
 		lock.lock();
 		try{
+			if (dummyLocalMin <= getlossthreshold()){
+				updateStock(calculateStoplossprice(), lasttime, ismidday, qyy);
+				LoggerUtil.getLogger().info("Should have been sold by CTCL because of hitting stoploss- " + getEntrySymbol() );
+				SendMail.generateAndSendEmail("Should have been sold by CTCL because of hitting stoploss- " + getEntrySymbol());
+				return true;
+			}
 			String ssymb = getEntrySymbol().split("-")[0];
 			short underlyingtype = 1;
 			if(ssymb.equals("NIFTY")){underlyingtype = 0;}
+			String stoplossid = getEntryStoplossid();
+			String[] stoplossids = stoplossid.split(";");
 			OrderDispatcher od = new OrderDispatcher();
 			od.connect();
 			for(int i=0;i<qyy;i++){
 				if(getEntryType().equals("Long")){
+					String slid = stoplossids[i+1];
+					od.cancelOrder((short)2, (short)1, 
+							Integer.toString(tokensmap.get(ssymb)), ssymb, 
+							marketlotmap.get(tokensmap.get(ssymb)), getEntryExpiry(), 1, 
+							underlyingtype,Long.parseLong(slid.split(",")[0]), Long.parseLong(slid.split(",")[1]));
 					double limitprice = curprice*(0.995);
 					int limitprice100 = (int) (limitprice*100);
 					limitprice100 = roundup(limitprice100);
@@ -522,6 +553,11 @@ public class SymbolEstimator {
 							marketlotmap.get(tokensmap.get(ssymb)), getEntryExpiry(), 1,
 							underlyingtype);
 				}else{
+					String slid = stoplossids[i+1];
+					od.cancelOrder((short)2, (short)0, 
+							Integer.toString(tokensmap.get(ssymb)), ssymb, 
+							marketlotmap.get(tokensmap.get(ssymb)), getEntryExpiry(), 1, 
+							underlyingtype,Long.parseLong(slid.split(",")[0]), Long.parseLong(slid.split(",")[1]));
 					double limitprice = curprice*(1.005);
 					int limitprice100 = (int) (limitprice*100);
 					limitprice100 = roundup(limitprice100);
@@ -562,7 +598,7 @@ public class SymbolEstimator {
 	
 	private List<TradeConfirmation> pollTrade(OrderDispatcher od, String symbol) {
 		long loopstarttime = System.currentTimeMillis();
-    	while(((System.currentTimeMillis()-loopstarttime)<1600)){
+    	while(((System.currentTimeMillis()-loopstarttime)<2000)){
     		intervalwait();
     	}
     	return od.getTradeConfirmation(symbol);
@@ -575,9 +611,9 @@ public class SymbolEstimator {
 	
 	private double getlossthreshold(){
 		if(buysell == null){
-			return -1.9;
+			return -1.75;
 		}else{
-			return -1.9;
+			return -1.75;
 		}
 	}
 	

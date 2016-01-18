@@ -54,6 +54,9 @@ public class BuySell implements Serializable {
     @Column(name = "Mcase")
     private int mcase;
     
+    @Column(name = "Stoplossid")
+    private String stoplossid;
+    
 	/**
 	 * @return the symbol
 	 */
@@ -243,6 +246,21 @@ public class BuySell implements Serializable {
 	 */
 	public void setMcase(int mcase) {
 		this.mcase = mcase;
+	}
+	
+	/**
+	 * @return the stoplossid
+	 */
+	public String getStoplossid() {
+		return stoplossid;
+	}
+
+
+	/**
+	 * @param stoplossid the stoplossid to set
+	 */
+	public void setStoplossid(String stoplossid) {
+		this.stoplossid = stoplossid;
 	}
 
 
