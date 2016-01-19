@@ -370,10 +370,7 @@ public class SymbolEstimator {
 			dummyLocalMin = curprofit;
 		}
 		
-		if(lasttime.compareTo("15:01") >= 0){
-			return sellStock(curprice, curprofit, "Endday",lasttime, getEntryBudget());
-		}
-		if(curdate.equals(getEntryExpiry()) && lasttime.compareTo("14:01") >= 0){
+		if(lasttime.compareTo("14:01") >= 0){
 			return sellStock(curprice, curprofit, "Endday",lasttime, getEntryBudget());
 		}
 		
