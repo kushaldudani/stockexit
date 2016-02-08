@@ -21,7 +21,6 @@ public class SymbolEstimator {
 	private String curdate;
 	private ReentrantLock lock;
 	private SynQueue<TickData> qu;
-	private double lossthreshold;
 	private Map<String, Integer> tokensmap;
 	private Map<Integer, Integer> marketlotmap;
 	
@@ -34,7 +33,6 @@ public class SymbolEstimator {
 		this.curdate = curdate;
 		this.lock = lock;
 		this.qu = qu;
-		this.lossthreshold = getlossthreshold();
 		this.tokensmap = StockExitUtil.buildTokensMap();
 		this.marketlotmap = StockExitUtil.buildMarketLotMap();
 		//this.stopthreshold = getstopthreshold();
@@ -328,7 +326,7 @@ public class SymbolEstimator {
 	}*/
 	
 	private double dummyLocalMax = 0;
-	private double dummyLocalMin = 0;
+	//private double dummyLocalMin = 0;
 	/*private long targetTimer = 0;
 	private int totalticks = 0;
 	
@@ -366,9 +364,9 @@ public class SymbolEstimator {
 				targetTimer = targetval + System.currentTimeMillis();
 			}*/
 		}
-		if(curprofit < dummyLocalMin) {
-			dummyLocalMin = curprofit;
-		}
+		//if(curprofit < dummyLocalMin) {
+		//	dummyLocalMin = curprofit;
+		//}
 		
 		if(lasttime.compareTo("14:01") >= 0){
 			return sellStock(curprice, curprofit, "Endday",lasttime, getEntryBudget());
@@ -519,15 +517,9 @@ public class SymbolEstimator {
 		}
 	}
 
-	private boolean sellStock(double curprice, double curprofit, String ismidday, String lasttime, int qyy) {
+	private boolean sellStock(double curprice, double curprofit, String ismidday, String lasttime, int uqyy) {
 		lock.lock();
 		try{
-			if (dummyLocalMin <= getlossthreshold()){
-				updateStock(calculateStoplossprice(), lasttime, ismidday, qyy);
-				LoggerUtil.getLogger().info("Should have been sold by CTCL because of hitting stoploss- " + getEntrySymbol() );
-				SendMail.generateAndSendEmail("Should have been sold by CTCL because of hitting stoploss- " + getEntrySymbol());
-				return true;
-			}
 			String ssymb = getEntrySymbol().split("-")[0];
 			short underlyingtype = 1;
 			if(ssymb.equals("NIFTY")){underlyingtype = 0;}
@@ -535,13 +527,36 @@ public class SymbolEstimator {
 			String[] stoplossids = stoplossid.split(";");
 			OrderDispatcher od = new OrderDispatcher();
 			od.connect();
-			for(int i=0;i<qyy;i++){
+			for(int i=0;i<uqyy;i++){
 				if(getEntryType().equals("Long")){
 					String slid = stoplossids[i+1];
 					od.cancelOrder((short)2, (short)1, 
 							Integer.toString(tokensmap.get(ssymb)), ssymb, 
 							marketlotmap.get(tokensmap.get(ssymb)), getEntryExpiry(), 1, 
 							underlyingtype,Long.parseLong(slid.split(",")[0]), Long.parseLong(slid.split(",")[1]));
+				}else{
+					String slid = stoplossids[i+1];
+					od.cancelOrder((short)2, (short)0, 
+							Integer.toString(tokensmap.get(ssymb)), ssymb, 
+							marketlotmap.get(tokensmap.get(ssymb)), getEntryExpiry(), 1, 
+							underlyingtype,Long.parseLong(slid.split(",")[0]), Long.parseLong(slid.split(",")[1]));
+				}
+			}
+			long loopstarttime = System.currentTimeMillis();
+	    	while(((System.currentTimeMillis()-loopstarttime)<4000)){
+	    		intervalwait();
+	    	}
+	    	int mqyy = od.getExchangeConfirmationCnt(ssymb, uqyy);
+			if(mqyy == -1){
+				LoggerUtil.getLogger().info("NotSold connection problem- "+ismidday +" - " + getEntrySymbol() );
+				SendMail.generateAndSendEmail("Not able to square off - "+ getEntrySymbol() + " qty - "+uqyy+
+						" connection problem. please square off from terminal");
+				return true;
+			}
+	    	od = new OrderDispatcher();
+			od.connect();
+			for(int i=0;i<mqyy;i++){
+				if(getEntryType().equals("Long")){
 					double limitprice = curprice*(0.995);
 					int limitprice100 = (int) (limitprice*100);
 					limitprice100 = roundup(limitprice100);
@@ -550,11 +565,6 @@ public class SymbolEstimator {
 							marketlotmap.get(tokensmap.get(ssymb)), getEntryExpiry(), 1,
 							underlyingtype);
 				}else{
-					String slid = stoplossids[i+1];
-					od.cancelOrder((short)2, (short)0, 
-							Integer.toString(tokensmap.get(ssymb)), ssymb, 
-							marketlotmap.get(tokensmap.get(ssymb)), getEntryExpiry(), 1, 
-							underlyingtype,Long.parseLong(slid.split(",")[0]), Long.parseLong(slid.split(",")[1]));
 					double limitprice = curprice*(1.005);
 					int limitprice100 = (int) (limitprice*100);
 					limitprice100 = roundup(limitprice100);
@@ -565,30 +575,31 @@ public class SymbolEstimator {
 				}
 				intervalwait();
 			}
-			List<TradeConfirmation> trade = null;
-			trade = pollTrade(od, ssymb);
-			if(trade != null && trade.size() == qyy){
+			List<TradeConfirmation> trade = pollTrade(od, ssymb);
+			if(trade != null && trade.size() == mqyy){
 				double sum=0;
-				int sz = trade.size();
 				for(TradeConfirmation tc : trade){
 					double tradedprice = ((double)(tc.TrdPrice)/(double)100);
 					sum = sum + tradedprice;
 				}
-				double avgtradedprice = (sum/(double)sz);
-				updateStock(avgtradedprice, lasttime, ismidday, qyy);
-				SendMail.generateAndSendEmail("Successfully squared off - "+ getEntrySymbol() + " qty - "+qyy+"  "+getEntryType() + 
-						" at price - " + getEntryExitprice()+" please verify, enterprice - "+getEntryEnterprice());
+				int slhitcnt = uqyy-mqyy;
+				sum = sum + (slhitcnt*calculateStoplossprice());
+				double avgtradedprice = (sum/(double)uqyy);
+				updateStock(avgtradedprice, lasttime, ismidday, uqyy);
+				SendMail.generateAndSendEmail("Successfully squared off - "+ getEntrySymbol() + " qty - "+uqyy+"  "+getEntryType() + 
+						" at price - " + getEntryExitprice()+" please verify, enterprice - "+getEntryEnterprice()+" AND out of which qty - "+slhitcnt+" hit stoploss and should have been squared off by CTCL");
 			}else{
 				LoggerUtil.getLogger().info("NotSold but order dispatched- "+ismidday +" - " + getEntrySymbol() );
-				SendMail.generateAndSendEmail("Tried squaring off - "+ getEntrySymbol() + " qty - "+qyy+
-						" but did not get trade confirmation. please square off from terminal");
+				int slhitcnt = uqyy-mqyy;
+				SendMail.generateAndSendEmail("Tried squaring off - "+ getEntrySymbol() + " qty - "+uqyy+
+						" but did not get trade confirmation. please verify from terminal that there are no remaining positions ALSO please note that out of which qty - "+slhitcnt+" hit stoploss and should have been squared off by CTCL");
 			}
 			return true;
 		}catch(Exception e){
 			LoggerUtil.getLogger().log(Level.SEVERE, "In SymbolEstimator SellStock failed "+getEntrySymbol(), e);
 		}finally { lock.unlock();}
 		LoggerUtil.getLogger().info("NotSold connection problem- "+ismidday +" - " + getEntrySymbol() );
-		SendMail.generateAndSendEmail("Not able to square off - "+ getEntrySymbol() + " qty - "+qyy+
+		SendMail.generateAndSendEmail("Not able to square off - "+ getEntrySymbol() + " qty - "+uqyy+
 				" connection problem. please square off from terminal");
 		return true;
 	}
@@ -604,14 +615,6 @@ public class SymbolEstimator {
 	private int roundup(int limitprice) {
 		int rnd = limitprice - (limitprice%10);
 		return rnd;
-	}
-	
-	private double getlossthreshold(){
-		if(buysell == null){
-			return -1.75;
-		}else{
-			return -1.75;
-		}
 	}
 	
 	private void intervalwait() {

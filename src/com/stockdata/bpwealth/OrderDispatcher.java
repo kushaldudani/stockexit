@@ -14,9 +14,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.zip.DataFormatException;
@@ -41,8 +38,8 @@ public class OrderDispatcher {
 		connector.connect();
 		
 		Thread.sleep(2000);
-		connector.cancelOrder((short)2, (short)0, "43997", 
-				"INFY", 500, "2016-01-28",1,(short) 1, 1300000005478834L, 15);
+		connector.cancelOrder((short)2, (short)0, "44505", 
+				"INFY", 500, "2016-02-25",1,(short) 1, 1300000005478834L, 15);
 	}
     
    private Socket echoSocket;
@@ -50,14 +47,14 @@ public class OrderDispatcher {
    private String ip = "203.123.141.236";
    private int port = 51525;
     //Enques reading so there are no concurrent reads on our side
-    private Map<String, OrderConfirmation> ordMap=new HashMap<String, OrderConfirmation>();
-    private ExchangeConfirmation item=null;
+    private Map<String, List<ExchangeConfirmation>> exhMap=new HashMap<>();
     //private TradeConfirmation trade=null;
     //private String symbol;
     private Map<String, List<TradeConfirmation>> trademap = new HashMap<>();
     private Map<Integer, String> reversetokensmap = null;
     private String password = null;
     private AtomicInteger isLoggedin = new AtomicInteger(0);
+    private AtomicInteger isUsed = new AtomicInteger(0);
     
     public OrderDispatcher() throws IOException{
     	//this.symbol = symbol;
@@ -68,27 +65,42 @@ public class OrderDispatcher {
         echoSocket.setKeepAlive(true);
         echoSocket.setSoTimeout(30*1000);
         reversetokensmap = StockExitUtil.buildReverseTokensMap();
-        new Thread(new ListenDirector()).start();
+        new Thread(new Listen()).start();
         password = StockExitUtil.readPassword();
     }
     
     
     public synchronized List<TradeConfirmation> getTradeConfirmation(String symbol){
+    	isUsed.set(1);
     	if(trademap.containsKey(symbol)){
     		return trademap.get(symbol);
     	}
-    	return null;
+    	return new ArrayList<TradeConfirmation>();
     }
     
-    public synchronized OrderConfirmation getOrderConfirmation(String symbol){
-    	if(ordMap.containsKey(symbol)){
-    		return ordMap.get(symbol);
+    public synchronized int getExchangeConfirmationCnt(String symbol, int qyy){
+    	isUsed.set(1);
+    	if(exhMap.containsKey(symbol)){
+    		List<ExchangeConfirmation> conflist = exhMap.get(symbol);
+    		if(conflist.size() != qyy){
+    			return -1;
+    		}
+    		int cancelledcnt = 0;
+    		for(ExchangeConfirmation ec : conflist){
+    			if(ec.ExchErrorCode == 0){
+    				cancelledcnt++;
+    			}
+    		}
+    		return cancelledcnt;
     	}
-    	return null;
+    	return -1;
     }
     
-    private synchronized void setOrderConfirmation(String symbol, OrderConfirmation ordconf){
-    	ordMap.put(symbol, ordconf);
+    private synchronized void setExchangeConfirmation(String symbol, ExchangeConfirmation exhconf){
+    	if(!exhMap.containsKey(symbol)){
+    		exhMap.put(symbol, new ArrayList<ExchangeConfirmation>());
+    	}
+    	exhMap.get(symbol).add(exhconf);
     }
     
     private synchronized void setTradeConfirmation(String symbol, TradeConfirmation trade){
@@ -357,7 +369,6 @@ public class OrderDispatcher {
 				try {
 
 					OrderConfirmation ordconf = new OrderConfirmation(message);
-					setOrderConfirmation(reversetokensmap.get(ordconf.Token),ordconf);
 					LoggerUtil.getLogger().info(ordconf+"");
 					/*
 					 * try (PrintWriter writer = new PrintWriter(new
@@ -393,10 +404,10 @@ public class OrderDispatcher {
 					|| header.MsgCode == CConstants.TransactionCode.Exchange_Killed
 					|| header.MsgCode == CConstants.TransactionCode.Exchange_Reject) {
 				try {
-
-					item = new ExchangeConfirmation(
-							message);
+					ExchangeConfirmation item = new ExchangeConfirmation(message);
 					LoggerUtil.getLogger().info(item+"");
+					String symbol = reversetokensmap.get(item.Token);
+					setExchangeConfirmation(symbol, item);
 					/*
 					 * try (PrintWriter writer = new PrintWriter(new
 					 * BufferedWriter(new FileWriter(APItoStr, true)))) {
@@ -476,38 +487,10 @@ public class OrderDispatcher {
 		}
 	}
 	
-	private class ListenDirector implements Runnable {
-		
-		private ExecutorService executorService;
-		@Override
-		public void run() {
-			long loopstarttime = System.currentTimeMillis();
-	    	while((System.currentTimeMillis()-loopstarttime)<60000){
-	    		executorService = Executors.newFixedThreadPool(1);
-	    		executorService.execute(new Listen(loopstarttime));
-	    		executorService.shutdown();
-	    		boolean result = false;
-	    		while(true){
-	    			try {
-	    				result = executorService.awaitTermination(7, TimeUnit.HOURS);
-	    				LoggerUtil.getLogger().info("Listen Connection lost - "+result);
-	    				break;
-	    			} catch (Exception e) {
-	    				LoggerUtil.getLogger().log(Level.SEVERE, "Listen Connection interrupted", e);
-	    			}
-	    		}
-	    		
-	    	}
-		}
-		
-	}
-    
+	
     private class Listen implements Runnable{
     	
-    	private long loopstarttime;
-    	public Listen(long loopstarttime){
-    		this.loopstarttime = loopstarttime;
-    	}
+    	
 
         @Override
         public void run() {
@@ -518,7 +501,7 @@ public class OrderDispatcher {
                     short msg_length=0;
                     int index = 0;
                     ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
-                    while((System.currentTimeMillis()-loopstarttime)<60000){
+                    while(isUsed.get() == 0){
                         
                         byte[] fresh = new byte[10240];
                         int size  = dIn.read( fresh );
