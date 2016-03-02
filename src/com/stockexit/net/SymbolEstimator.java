@@ -379,9 +379,6 @@ public class SymbolEstimator {
 		}*/
 		if(lasttime.compareTo("09:45") >= 0 && dummyLocalMax >= 2.5 && curprofit <= 1.3){
 			return sellStock(curprice, curprofit, "PullBack",lasttime, getEntryBudget());
-		}else if(lasttime.compareTo("09:45") >= 0 && !sss.equals("NIFTY") 
-				&& curprofit >= -2 && curprofit < -1 && NewsCache.getNewsImportance(sss)>0){
-			return sellStock(curprice, curprofit, "NewsCache",lasttime, getEntryBudget());
 		}else if(lasttime.compareTo("09:30") >= 0 && !sss.equals("NIFTY") && curprofit >= getNiftyBasedProfitThreshold() 
 				&& (getNiftyUpPercent() <= -0.7||getNiftyDownFromHighPercent() >=0.7) && getEntryType().equals("Long")){
 			return sellStock(curprice, curprofit, "LongNiftyBased",lasttime, getEntryBudget());
