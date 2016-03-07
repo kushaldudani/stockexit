@@ -61,6 +61,10 @@ public class TradeConfirmation {
         
     }
 
+	public TradeConfirmation(int tradeprice) {
+		this.TrdPrice = tradeprice;
+	}
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */

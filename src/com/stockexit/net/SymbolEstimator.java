@@ -1,5 +1,6 @@
 package com.stockexit.net;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
@@ -326,7 +327,7 @@ public class SymbolEstimator {
 	}*/
 	
 	private double dummyLocalMax = 0;
-	//private double dummyLocalMin = 0;
+	private double dummyLocalMin = 0;
 	/*private long targetTimer = 0;
 	private int totalticks = 0;
 	
@@ -364,9 +365,9 @@ public class SymbolEstimator {
 				targetTimer = targetval + System.currentTimeMillis();
 			}*/
 		}
-		//if(curprofit < dummyLocalMin) {
-		//	dummyLocalMin = curprofit;
-		//}
+		if(curprofit < dummyLocalMin) {
+			dummyLocalMin = curprofit;
+		}
 		
 		if(lasttime.compareTo("14:01") >= 0){
 			return sellStock(curprice, curprofit, "Endday",lasttime, getEntryBudget());
@@ -527,29 +528,38 @@ public class SymbolEstimator {
 			for(int i=0;i<uqyy;i++){
 				if(getEntryType().equals("Long")){
 					String slid = stoplossids[i+1];
-					od.cancelOrder((short)2, (short)1, 
+					if(StockExitUtil.isReal){
+						od.cancelOrder((short)2, (short)1, 
 							Integer.toString(tokensmap.get(ssymb)), ssymb, 
 							marketlotmap.get(tokensmap.get(ssymb)), getEntryExpiry(), 1, 
 							underlyingtype,Long.parseLong(slid.split(",")[0]), Long.parseLong(slid.split(",")[1]));
+					}
 				}else{
 					String slid = stoplossids[i+1];
-					od.cancelOrder((short)2, (short)0, 
+					if(StockExitUtil.isReal){
+						od.cancelOrder((short)2, (short)0, 
 							Integer.toString(tokensmap.get(ssymb)), ssymb, 
 							marketlotmap.get(tokensmap.get(ssymb)), getEntryExpiry(), 1, 
 							underlyingtype,Long.parseLong(slid.split(",")[0]), Long.parseLong(slid.split(",")[1]));
+					}
 				}
 			}
 			long loopstarttime = System.currentTimeMillis();
 	    	while(((System.currentTimeMillis()-loopstarttime)<4000)){
 	    		intervalwait();
 	    	}
-	    	int mqyy = od.getExchangeConfirmationCnt(ssymb, uqyy);
-			if(mqyy == -1){
-				LoggerUtil.getLogger().info("NotSold connection problem- "+ismidday +" - " + getEntrySymbol() );
-				SendMail.generateAndSendEmail("Not able to square off - "+ getEntrySymbol() + " qty - "+uqyy+
+	    	int mqyy;
+	    	if(StockExitUtil.isReal){
+	    		mqyy = od.getExchangeConfirmationCnt(ssymb, uqyy);
+	    		if(mqyy == -1){
+	    			LoggerUtil.getLogger().info("NotSold connection problem- "+ismidday +" - " + getEntrySymbol() );
+	    			SendMail.generateAndSendEmail("Not able to square off - "+ getEntrySymbol() + " qty - "+uqyy+
 						" connection problem. please square off from terminal");
-				return true;
-			}
+	    			return true;
+	    		}
+	    	}else{
+	    		mqyy = (dummyLocalMin <= -1.9)?0:uqyy;
+	    	}
 	    	od = new OrderDispatcher();
 			od.connect();
 			for(int i=0;i<mqyy;i++){
@@ -557,22 +567,26 @@ public class SymbolEstimator {
 					double limitprice = curprice*(0.995);
 					int limitprice100 = (int) (limitprice*100);
 					limitprice100 = roundup(limitprice100);
-					od.sendOrder((short)0, (short)1, 
+					if(StockExitUtil.isReal){
+						od.sendOrder((short)0, (short)1, 
 							Integer.toString(tokensmap.get(ssymb)), ssymb, limitprice100, 
 							marketlotmap.get(tokensmap.get(ssymb)), getEntryExpiry(), 1,
 							underlyingtype);
+					}
 				}else{
 					double limitprice = curprice*(1.005);
 					int limitprice100 = (int) (limitprice*100);
 					limitprice100 = roundup(limitprice100);
-					od.sendOrder((short)0, (short)0, 
+					if(StockExitUtil.isReal){
+						od.sendOrder((short)0, (short)0, 
 							Integer.toString(tokensmap.get(ssymb)), ssymb, limitprice100, 
 							marketlotmap.get(tokensmap.get(ssymb)), getEntryExpiry(), 1,
 							underlyingtype);
+					}
 				}
 				intervalwait();
 			}
-			List<TradeConfirmation> trade = pollTrade(od, ssymb);
+			List<TradeConfirmation> trade = pollTrade(od, ssymb, curprice, mqyy);
 			if(trade != null && trade.size() == mqyy){
 				double sum=0;
 				for(TradeConfirmation tc : trade){
@@ -601,12 +615,20 @@ public class SymbolEstimator {
 		return true;
 	}
 	
-	private List<TradeConfirmation> pollTrade(OrderDispatcher od, String symbol) {
-		long loopstarttime = System.currentTimeMillis();
-    	while(((System.currentTimeMillis()-loopstarttime)<2000)){
-    		intervalwait();
-    	}
-    	return od.getTradeConfirmation(symbol);
+	private List<TradeConfirmation> pollTrade(OrderDispatcher od, String symbol, double price, int mqyy) {
+		if(StockExitUtil.isReal){
+			long loopstarttime = System.currentTimeMillis();
+			while(((System.currentTimeMillis()-loopstarttime)<2000)){
+				intervalwait();
+			}
+			return od.getTradeConfirmation(symbol);
+		}else{
+			List<TradeConfirmation> trades = new ArrayList<>();
+			for(int i=0;i<mqyy;i++){
+				trades.add(new TradeConfirmation((int)(price*100)));
+			}
+			return trades;
+		}
 	}
 
 	private int roundup(int limitprice) {

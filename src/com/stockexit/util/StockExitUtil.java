@@ -18,6 +18,32 @@ import java.util.logging.Level;
 public class StockExitUtil {
 	
 	public static boolean runFuture = true;
+	public static final boolean isReal;
+	static {
+		InputStreamReader is = null;
+		BufferedReader br = null;
+		String isreal = "";
+		try {
+			is = new InputStreamReader(new FileInputStream(new 
+					File("/Users/kushd/nse/simulation")));
+			br =  new BufferedReader(is);
+			
+			
+			String line; 
+			while ((line = br.readLine()) != null) {
+				isreal = line.trim();
+			}
+		} catch (Exception e) {
+			LoggerUtil.getLogger().log(Level.SEVERE, "StockExit is simulation read failed", e);
+		}finally{
+			 try {
+				br.close();
+				is.close();
+				
+			} catch (IOException e) {}
+		}
+		isReal = (isreal.equals("true"))?true:false;
+	}
 	
 	
 private static Map<String,Integer> tokensmap = null;
