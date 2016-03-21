@@ -369,8 +369,11 @@ public class SymbolEstimator {
 			dummyLocalMin = curprofit;
 		}
 		
-		if(lasttime.compareTo("14:01") >= 0){
-			return sellStock(curprice, curprofit, "Endday",lasttime, getEntryBudget());
+		if(lasttime.compareTo("14:01") >= 0 && lasttime.compareTo("14:06") < 0 && curprofit > -0.5){
+			return sellStock(curprice, curprofit, "Endday1",lasttime, getEntryBudget());
+		}
+		if(lasttime.compareTo("15:01") >= 0){
+			return sellStock(curprice, curprofit, "Endday2",lasttime, getEntryBudget());
 		}
 		
 		/*if((targetTimer>0) && (targetTimer>100) && ((System.currentTimeMillis()-targetTimer)>0)){
