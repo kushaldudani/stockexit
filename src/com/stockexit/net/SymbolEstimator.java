@@ -328,6 +328,7 @@ public class SymbolEstimator {
 	
 	private double dummyLocalMax = 0;
 	private double dummyLocalMin = 0;
+	private double recordedProfitAt2 = -200;
 	/*private long targetTimer = 0;
 	private int totalticks = 0;
 	
@@ -368,8 +369,12 @@ public class SymbolEstimator {
 		if(curprofit < dummyLocalMin) {
 			dummyLocalMin = curprofit;
 		}
+		if(lasttime.compareTo("14:01") >= 0 && recordedProfitAt2 != -200){
+			recordedProfitAt2 = curprofit;
+		}
 		
-		if(lasttime.compareTo("14:01") >= 0 && lasttime.compareTo("14:06") < 0 && curprofit > -0.5){
+		double dipfromprofitat2 = curprofit - recordedProfitAt2;
+		if(lasttime.compareTo("14:01") >= 0 && dipfromprofitat2 >= 0.75){
 			return sellStock(curprice, curprofit, "Endday1",lasttime, getEntryBudget());
 		}
 		if(lasttime.compareTo("15:01") >= 0){
