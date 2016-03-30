@@ -369,7 +369,7 @@ public class SymbolEstimator {
 		if(curprofit < dummyLocalMin) {
 			dummyLocalMin = curprofit;
 		}
-		if(lasttime.compareTo("14:01") >= 0 && recordedProfitAt2 != -200){
+		if(lasttime.compareTo("14:01") >= 0 && recordedProfitAt2 == -200){
 			recordedProfitAt2 = curprofit;
 		}
 		
