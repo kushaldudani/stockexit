@@ -9,7 +9,6 @@ import java.util.logging.Level;
 import com.stockdata.bpwealth.OrderDispatcher;
 import com.stockdata.bpwealth.TradeConfirmation;
 import com.stockdata.bpwealth.broadcast.TickData;
-import com.stockdata.bpwealth.broadcast.TickListener;
 import com.stockexit.util.LoggerUtil;
 import com.stockexit.util.SendMail;
 import com.stockexit.util.StockExitUtil;
@@ -328,7 +327,7 @@ public class SymbolEstimator {
 	
 	private double dummyLocalMax = 0;
 	private double dummyLocalMin = 0;
-	private double recordedProfitAt2 = -200;
+	//private double recordedProfitAt2 = -200;
 	/*private long targetTimer = 0;
 	private int totalticks = 0;
 	
@@ -369,15 +368,15 @@ public class SymbolEstimator {
 		if(curprofit < dummyLocalMin) {
 			dummyLocalMin = curprofit;
 		}
-		if(lasttime.compareTo("14:01") >= 0 && recordedProfitAt2 == -200){
+		/*if(lasttime.compareTo("12:30") >= 0 && recordedProfitAt2 == -200){
 			recordedProfitAt2 = curprofit;
 		}
 		
-		double dipfromprofitat2 = curprofit - recordedProfitAt2;
-		if(lasttime.compareTo("14:01") >= 0 && dipfromprofitat2 >= 0.75){
+		double dipfromprofitat2 = curprofit - recordedProfitAt2;*/
+		if(lasttime.compareTo("12:30") >= 0 && curprofit >= 1.55){
 			return sellStock(curprice, curprofit, "Endday1",lasttime, getEntryBudget());
 		}
-		if(lasttime.compareTo("15:01") >= 0){
+		if(lasttime.compareTo("14:30") >= 0){
 			return sellStock(curprice, curprofit, "Endday2",lasttime, getEntryBudget());
 		}
 		
@@ -388,13 +387,13 @@ public class SymbolEstimator {
 		}*/
 		if(lasttime.compareTo("09:45") >= 0 && dummyLocalMax >= 2.5 && curprofit <= 1.3){
 			return sellStock(curprice, curprofit, "PullBack",lasttime, getEntryBudget());
-		}else if(lasttime.compareTo("09:30") >= 0 && !sss.equals("NIFTY") && curprofit >= getNiftyBasedProfitThreshold() 
+		}/*else if(lasttime.compareTo("09:30") >= 0 && !sss.equals("NIFTY") && curprofit >= getNiftyBasedProfitThreshold() 
 				&& (getNiftyUpPercent() <= -0.7||getNiftyDownFromHighPercent() >=0.7) && getEntryType().equals("Long")){
 			return sellStock(curprice, curprofit, "LongNiftyBased",lasttime, getEntryBudget());
 		}else if(lasttime.compareTo("09:30") >= 0 && !sss.equals("NIFTY") && curprofit >= getNiftyBasedProfitThreshold()
 				&& (getNiftyUpPercent() >= 0.7||getNiftyUpFromLowPercent() >=0.7) && getEntryType().equals("Short")){
 			return sellStock(curprice, curprofit, "ShortNiftyBased",lasttime, getEntryBudget());
-		}
+		}*/
 		//else if(lasttime.compareTo("09:45") >= 0 && sss.equals("NIFTY") && curprofit < -0.75){
 		//	return sellStock(curprice, curprofit, "Endday",lasttime, getEntryBudget());
 		//}
@@ -421,13 +420,13 @@ public class SymbolEstimator {
 		return false;
 	}
 	
-	private double getNiftyBasedProfitThreshold(){
+	/*private double getNiftyBasedProfitThreshold(){
 		if(buysell != null){
 			return 1.55;
 		}else{
 			return 0.95;
 		}
-	}
+	}*/
 	
 	//private static final int NIFTYPRINCIPAL = 400000;
 	
@@ -445,7 +444,7 @@ public class SymbolEstimator {
 		return lowerint;
 	}*/
 	
-	private double getNiftyUpFromLowPercent(){
+	/*private double getNiftyUpFromLowPercent(){
 		return TickListener.getNiftyUpFromLow();
 	}
 	
@@ -459,7 +458,7 @@ public class SymbolEstimator {
 		}else{
 			return TickListener.getNiftyUpFromClosepercent();
 		}
-	}
+	}*/
 	
 	/*private double getSlippage(double entryNextopenprice, double entryEnterprice, String type) {
 		if(type.equals("Long")){
@@ -626,7 +625,7 @@ public class SymbolEstimator {
 	private List<TradeConfirmation> pollTrade(OrderDispatcher od, String symbol, double price, int mqyy) {
 		if(StockExitUtil.isReal){
 			long loopstarttime = System.currentTimeMillis();
-			while(((System.currentTimeMillis()-loopstarttime)<2000)){
+			while(((System.currentTimeMillis()-loopstarttime)<3000)){
 				intervalwait();
 			}
 			return od.getTradeConfirmation(symbol);

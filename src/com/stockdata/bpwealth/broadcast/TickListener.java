@@ -22,10 +22,10 @@ public class TickListener implements Runnable{
 	Socket echoSocket;
 	Map<String,List<SynQueue<TickData>>> queuemap;
 	Map<Integer, String> reversetokensmap = null;
-	static double niftyuppercent = 0;
-	static double niftyuppercentfromclose = 0;
-	static double niftyupfromlow = 0;
-	static double niftydownfromhigh = 0;
+	//static double niftyuppercent = 0;
+	//static double niftyuppercentfromclose = 0;
+	//static double niftyupfromlow = 0;
+	//static double niftydownfromhigh = 0;
 	
 	public TickListener(Socket echoSocket, Map<String,List<SynQueue<TickData>>> queuemap) {
 		this.echoSocket = echoSocket;
@@ -162,7 +162,7 @@ public class TickListener implements Runnable{
     	for(SynQueue<TickData> quu : allqueues){
     		quu.enqueue(tdt);
     	}
-    	if(sss.equals("NIFTY") && watch.getOpen() > 0 && watch.getPreviousClose() > 0){
+    	/*if(sss.equals("NIFTY") && watch.getOpen() > 0 && watch.getPreviousClose() > 0){
     		double niftyup = (((watch.getLTP()-watch.getOpen())/watch.getOpen())*100);
     		setNiftyUppercent(niftyup);
     		double niftyupfromclose = (((watch.getLTP()-watch.getPreviousClose())/watch.getPreviousClose())*100);
@@ -171,11 +171,11 @@ public class TickListener implements Runnable{
     		setNiftyUpFromLow(niftyupfromlow);
     		double niftydownfromhigh = (((watch.getDayHigh()-watch.getLTP())/watch.getDayHigh())*100);
     		setNiftyDownFromHigh(niftydownfromhigh);
-    	}
+    	}*/
     	checklasttime = cal.getTimeInMillis();
     }
     
-    private static synchronized void setNiftyUppercent(double niftyup){
+    /*private static synchronized void setNiftyUppercent(double niftyup){
     	niftyuppercent = niftyup;
     }
     
@@ -205,6 +205,6 @@ public class TickListener implements Runnable{
     
     public static synchronized double getNiftyDownFromHigh(){
     	return niftydownfromhigh;
-    }
+    }*/
     
 }

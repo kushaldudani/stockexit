@@ -267,14 +267,14 @@ public class OrderDispatcher {
     }
 
     
-	public class parseData implements Runnable {
+	public class parseData {
 		byte[] data;
 
 		public parseData(byte[] data) {
 			this.data = data;
 		}
 
-		@Override
+		
 		public void run() {
 
 			CompressionHeader compHeader = new CompressionHeader(data);
@@ -532,7 +532,7 @@ public class OrderDispatcher {
                        // System.out.println("Message length:"+msg_length+"\tStream:"+baos.size()+"\tIndex:"+index    );
                         byte[] data = new byte[msg_length];
                         System.arraycopy(baos.toByteArray(), index, data, 0, data.length);
-                        new Thread((new parseData(data))).start();
+                        new parseData(data).run();
                         index +=msg_length;
                         }
                         
