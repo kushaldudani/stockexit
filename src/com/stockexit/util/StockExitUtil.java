@@ -62,10 +62,10 @@ private static Map<String,Integer> tokensmap = null;
 			String line; 
 			while ((line = br.readLine()) != null) {
 				String[] vals = line.split("\\|");
-				vals[3]  = vals[3].replace("-", "_");
-				vals[3] = vals[3].replaceAll("\\s", "");
-				vals[6] = vals[6].replaceAll("\\s", "");
-				tokensmap.put(vals[3], Integer.parseInt(vals[6]));
+				vals[2]  = vals[2].replace("-", "_");
+				vals[2] = vals[2].replaceAll("\\s", "");
+				vals[5] = vals[5].replaceAll("\\s", "");
+				tokensmap.put(vals[2], Integer.parseInt(vals[5]));
 			}
 		} catch (Exception e) {
 			LoggerUtil.getLogger().log(Level.SEVERE, "TokensMap load failed", e);
@@ -94,10 +94,10 @@ private static Map<String,Integer> tokensmap = null;
 			String line; 
 			while ((line = br.readLine()) != null) {
 				String[] vals = line.split("\\|");
-				vals[3]  = vals[3].replace("-", "_");
-				vals[3] = vals[3].replaceAll("\\s", "");
-				vals[6] = vals[6].replaceAll("\\s", "");
-				reversetokensmap.put(Integer.parseInt(vals[6]), vals[3]);
+				vals[2]  = vals[2].replace("-", "_");
+				vals[2] = vals[2].replaceAll("\\s", "");
+				vals[5] = vals[5].replaceAll("\\s", "");
+				reversetokensmap.put(Integer.parseInt(vals[5]), vals[2]);
 			}
 		} catch (Exception e) {
 			LoggerUtil.getLogger().log(Level.SEVERE, "ReverseTokensMap load failed", e);
@@ -127,9 +127,9 @@ private static Map<String,Integer> tokensmap = null;
 			String line; 
 			while ((line = br.readLine()) != null) {
 				String[] vals = line.split("\\|");
+				vals[5] = vals[5].replaceAll("\\s", "");
 				vals[6] = vals[6].replaceAll("\\s", "");
-				vals[7] = vals[7].replaceAll("\\s", "");
-				marketlotmap.put(Integer.parseInt(vals[6]), Integer.parseInt(vals[7]));
+				marketlotmap.put(Integer.parseInt(vals[5]), Integer.parseInt(vals[6]));
 			}
 		} catch (Exception e) {
 			LoggerUtil.getLogger().log(Level.SEVERE, "MarketLotMap load failed", e);
