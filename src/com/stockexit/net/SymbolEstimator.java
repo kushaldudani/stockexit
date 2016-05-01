@@ -374,10 +374,10 @@ public class SymbolEstimator {
 		
 		double dipfromprofitat2 = curprofit - recordedProfitAt2;*/
 		double thprofit = Math.max(1, (0.8*dummyLocalMax));
-		if(lasttime.compareTo("12:30") >= 0 && curprofit >= thprofit){
+		if(lasttime.compareTo("14:02") >= 0 && curprofit >= thprofit){
 			return sellStock(curprice, curprofit, "Endday1",lasttime, getEntryBudget());
 		}
-		if(lasttime.compareTo("14:30") >= 0){
+		if(lasttime.compareTo("15:15") >= 0){
 			return sellStock(curprice, curprofit, "Endday2",lasttime, getEntryBudget());
 		}
 		
