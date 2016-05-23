@@ -2,17 +2,16 @@ package com.stockexit.net;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 
-import com.stockdata.bpwealth.OrderDispatcher;
-import com.stockdata.bpwealth.TradeConfirmation;
 import com.stockdata.bpwealth.broadcast.TickData;
 import com.stockexit.util.LoggerUtil;
 import com.stockexit.util.SendMail;
 import com.stockexit.util.StockExitUtil;
 import com.stockexit.util.SynQueue;
+import com.stockexit.zerodha.OrderDispatcher;
+import com.stockexit.zerodha.TradeConfirmation;
 
 public class SymbolEstimator {
 	
@@ -21,8 +20,8 @@ public class SymbolEstimator {
 	private String curdate;
 	private ReentrantLock lock;
 	private SynQueue<TickData> qu;
-	private Map<String, Integer> tokensmap;
-	private Map<Integer, Integer> marketlotmap;
+	//private Map<String, Integer> tokensmap;
+	//private Map<Integer, Integer> marketlotmap;
 	
 	//private double stopthreshold;
 	
@@ -33,8 +32,8 @@ public class SymbolEstimator {
 		this.curdate = curdate;
 		this.lock = lock;
 		this.qu = qu;
-		this.tokensmap = StockExitUtil.buildTokensMap();
-		this.marketlotmap = StockExitUtil.buildMarketLotMap();
+		//this.tokensmap = StockExitUtil.buildTokensMap();
+		//this.marketlotmap = StockExitUtil.buildMarketLotMap();
 		//this.stopthreshold = getstopthreshold();
 	}
 	
@@ -141,14 +140,14 @@ public class SymbolEstimator {
 			return smodel.getExpiry();
 		}
 	}
-	private int getEntryMcase(){
+	int getEntryMcase(){
 		if(buysell != null){
 			return buysell.getMcase();
 		}else {
 			return smodel.getMcase();
 		}
 	}
-	private int getEntryDaystried(){
+	int getEntryDaystried(){
 		if(buysell != null){
 			return buysell.getDaystried();
 		}else {
@@ -162,7 +161,7 @@ public class SymbolEstimator {
 			return smodel.getHasbudget();
 		}
 	}
-	private double getEntryNextopenprice(){
+	double getEntryNextopenprice(){
 		if(buysell != null){
 			return buysell.getNextopenprice();
 		}else {
@@ -527,28 +526,19 @@ public class SymbolEstimator {
 		lock.lock();
 		try{
 			String ssymb = getEntrySymbol().split("-")[0];
-			short underlyingtype = 1;
-			if(ssymb.equals("NIFTY")){underlyingtype = 0;}
 			String stoplossid = getEntryStoplossid();
 			String[] stoplossids = stoplossid.split(";");
 			OrderDispatcher od = new OrderDispatcher();
-			od.connect();
 			for(int i=0;i<uqyy;i++){
 				if(getEntryType().equals("Long")){
 					String slid = stoplossids[i+1];
 					if(StockExitUtil.isReal){
-						od.cancelOrder((short)2, (short)1, 
-							Integer.toString(tokensmap.get(ssymb)), ssymb, 
-							marketlotmap.get(tokensmap.get(ssymb)), getEntryExpiry(), 1, 
-							underlyingtype,Long.parseLong(slid.split(",")[0]), Long.parseLong(slid.split(",")[1]));
+						od.cancelOrder((short)1,ssymb, getEntryExpiry(), 1,slid.split(",")[1]);
 					}
 				}else{
 					String slid = stoplossids[i+1];
 					if(StockExitUtil.isReal){
-						od.cancelOrder((short)2, (short)0, 
-							Integer.toString(tokensmap.get(ssymb)), ssymb, 
-							marketlotmap.get(tokensmap.get(ssymb)), getEntryExpiry(), 1, 
-							underlyingtype,Long.parseLong(slid.split(",")[0]), Long.parseLong(slid.split(",")[1]));
+						od.cancelOrder((short)0, ssymb, getEntryExpiry(), 1,slid.split(",")[1]);
 					}
 				}
 			}
@@ -556,9 +546,10 @@ public class SymbolEstimator {
 	    	while(((System.currentTimeMillis()-loopstarttime)<4000)){
 	    		intervalwait();
 	    	}
+	    	od.closeSocket();
 	    	int mqyy;
 	    	if(StockExitUtil.isReal){
-	    		mqyy = od.getExchangeConfirmationCnt(ssymb, uqyy);
+	    		mqyy = od.getExchangeConfirmationCnt(ssymb, uqyy, getEntryExpiry());
 	    		if(mqyy == -1){
 	    			LoggerUtil.getLogger().info("NotSold connection problem- "+ismidday +" - " + getEntrySymbol() );
 	    			SendMail.generateAndSendEmail("Not able to square off - "+ getEntrySymbol() + " qty - "+uqyy+
@@ -569,36 +560,26 @@ public class SymbolEstimator {
 	    		mqyy = (dummyLocalMin <= -1.9)?0:uqyy;
 	    	}
 	    	od = new OrderDispatcher();
-			od.connect();
 			for(int i=0;i<mqyy;i++){
 				if(getEntryType().equals("Long")){
 					double limitprice = curprice*(0.995);
-					int limitprice100 = (int) (limitprice*100);
-					limitprice100 = roundup(limitprice100);
 					if(StockExitUtil.isReal){
-						od.sendOrder((short)0, (short)1, 
-							Integer.toString(tokensmap.get(ssymb)), ssymb, limitprice100, 
-							marketlotmap.get(tokensmap.get(ssymb)), getEntryExpiry(), 1,
-							underlyingtype);
+						od.sendOrder((short)1, ssymb, limitprice, getEntryExpiry(), 1);
 					}
 				}else{
 					double limitprice = curprice*(1.005);
-					int limitprice100 = (int) (limitprice*100);
-					limitprice100 = roundup(limitprice100);
 					if(StockExitUtil.isReal){
-						od.sendOrder((short)0, (short)0, 
-							Integer.toString(tokensmap.get(ssymb)), ssymb, limitprice100, 
-							marketlotmap.get(tokensmap.get(ssymb)), getEntryExpiry(), 1,
-							underlyingtype);
+						od.sendOrder((short)0, ssymb, limitprice, getEntryExpiry(), 1);
 					}
 				}
 				intervalwait();
 			}
 			List<TradeConfirmation> trade = pollTrade(od, ssymb, curprice, mqyy);
+			od.closeSocket();
 			if(trade != null && trade.size() == mqyy){
 				double sum=0;
 				for(TradeConfirmation tc : trade){
-					double tradedprice = ((double)(tc.TrdPrice)/(double)100);
+					double tradedprice = tc.lasttradedprice;
 					sum = sum + tradedprice;
 				}
 				int slhitcnt = uqyy-mqyy;
@@ -629,19 +610,14 @@ public class SymbolEstimator {
 			while(((System.currentTimeMillis()-loopstarttime)<3000)){
 				intervalwait();
 			}
-			return od.getTradeConfirmation(symbol);
+			return od.getTradeConfirmation(symbol, getEntryExpiry());
 		}else{
 			List<TradeConfirmation> trades = new ArrayList<>();
 			for(int i=0;i<mqyy;i++){
-				trades.add(new TradeConfirmation((int)(price*100)));
+				trades.add(new TradeConfirmation(price,"",""));
 			}
 			return trades;
 		}
-	}
-
-	private int roundup(int limitprice) {
-		int rnd = limitprice - (limitprice%10);
-		return rnd;
 	}
 	
 	private void intervalwait() {
