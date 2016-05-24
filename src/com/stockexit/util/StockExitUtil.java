@@ -174,6 +174,19 @@ private static Map<String,Integer> tokensmap = null;
     	}
     }
 	
+	public static double roundup(double limitprice) {
+		int limitprice100 = (int) (limitprice*100);
+		int mod = (limitprice100%10);
+		int rnd;
+		if(mod > 5) {
+			rnd = limitprice100 - mod + 10;
+		}else {
+			rnd = limitprice100 - mod;
+		}
+		double result = (double)((double)rnd/(double)100.0);
+		return result;
+	}
+	
 	public static String readPassword(){
 		InputStreamReader is = null;
 		BufferedReader br = null;

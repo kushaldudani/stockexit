@@ -564,12 +564,12 @@ public class SymbolEstimator {
 				if(getEntryType().equals("Long")){
 					double limitprice = curprice*(0.995);
 					if(StockExitUtil.isReal){
-						od.sendOrder((short)1, ssymb, limitprice, getEntryExpiry(), 1);
+						od.sendOrder((short)1, ssymb, StockExitUtil.roundup(limitprice), getEntryExpiry(), 1);
 					}
 				}else{
 					double limitprice = curprice*(1.005);
 					if(StockExitUtil.isReal){
-						od.sendOrder((short)0, ssymb, limitprice, getEntryExpiry(), 1);
+						od.sendOrder((short)0, ssymb, StockExitUtil.roundup(limitprice), getEntryExpiry(), 1);
 					}
 				}
 				intervalwait();
