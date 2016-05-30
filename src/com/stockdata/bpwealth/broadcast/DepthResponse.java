@@ -47,8 +47,9 @@ public class DepthResponse {
     			int index = 2;
     			for(short i=0;i<packetcnt;i++){
     				short packetlength = CConstants.getInt16(data, index);
+    				index = index + 2;
     				byte[] packet = new byte[packetlength];
-    				System.arraycopy(data, index+2, packet, 0, packetlength);
+    				System.arraycopy(data, index, packet, 0, packetlength);
     				DepthResponse depth = new DepthResponse(packet);
     				depths.add(depth);
     				index = index + packetlength;
