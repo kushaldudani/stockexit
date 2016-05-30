@@ -67,7 +67,7 @@ public class CConstants {
         
         public static int getInt32(byte[] bytes, int beginIndex){
         ByteBuffer buffer = ByteBuffer.allocate(4);
-        buffer.order(ByteOrder.LITTLE_ENDIAN);
+        buffer.order(ByteOrder.BIG_ENDIAN);
         System.arraycopy(bytes, beginIndex, buffer.array(), 0, buffer.array().length);
         return buffer.getInt();
         }
@@ -86,7 +86,7 @@ public class CConstants {
         
         public static short getInt16(byte[] bytes, int beginIndex){
         ByteBuffer buffer = ByteBuffer.allocate(2);
-        buffer.order(ByteOrder.LITTLE_ENDIAN);
+        buffer.order(ByteOrder.BIG_ENDIAN);
         System.arraycopy(bytes, beginIndex, buffer.array(), 0, buffer.array().length);
         return buffer.getShort();
         }

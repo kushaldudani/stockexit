@@ -2,16 +2,11 @@
 package com.stockdata.bpwealth.broadcast;
 
 
-import java.io.DataOutputStream;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 import com.stockexit.util.LoggerUtil;
@@ -40,27 +35,27 @@ public class BroadCastManager{
 		    System.exit(1);
 		}*/
 		
-		String ip = "203.123.141.236";
-		int port = 46026;
+		//String ip = "203.123.141.236";
+		//int port = 46026;
 		
 		
 		Map<String,Integer> tokensMap = StockExitUtil.buildTokensMap();
 		
 		
-		List<Integer> syms = new ArrayList<Integer>();
+		List<Integer> syms = new ArrayList<>();
 		for(String sss : queuemap.keySet()){
 			syms.add(tokensMap.get(sss));
 		}
-		BroadCastManager bmanager = new BroadCastManager(ip, port);
+		BroadCastManager bmanager = new BroadCastManager();
 		bmanager.subscribe(syms,queuemap);
 	}
 	
-    private String ip;
-    private int port;
-    private ExecutorService executorService;
-    public BroadCastManager(String ip,int port) {
-        this.ip = ip;
-        this.port = port;
+    //private String ip;
+    //private int port;
+    //private ExecutorService executorService;
+    public BroadCastManager() {
+        //this.ip = ip;
+        //this.port = port;
     }
  
     private void subscribe(List<Integer> tokens, Map<String,List<SynQueue<TickData>>> queuemap) {
@@ -69,39 +64,35 @@ public class BroadCastManager{
 		String minute = String.format("%02d",cal.get(Calendar.MINUTE));
 		String lasttime = hour+":"+minute;
     	while(lasttime.compareTo("09:15") >= 0 && lasttime.compareTo("15:30") < 0){
-			MarketDepthRequest req = new MarketDepthRequest(tokens);
-			try{
-	        Socket echoSocket = new Socket(ip, port);
-	        echoSocket.setReceiveBufferSize(6092);
-	        echoSocket.setSendBufferSize(1024);
-	        echoSocket.setTcpNoDelay(true);
-	        echoSocket.setSoTimeout(30*1000);
-	        
-	        
-	        	DataOutputStream outToServer = new DataOutputStream(echoSocket.getOutputStream());
-	        	outToServer.write(req.getStruct());
-	        	outToServer.flush();
-	        	executorService = Executors.newFixedThreadPool(1);
-	        	executorService.execute(new TickListener(echoSocket,queuemap));
-	        	executorService.shutdown();
+    		boolean result = false;
+    		try{
+    			KiteBroadcast.mainrun(tokens, queuemap);
+    			result = true;
 	        }catch(Exception e){
-	        	LoggerUtil.getLogger().log(Level.SEVERE, "Broadcast cannot request to listen to data", e);
+	        	LoggerUtil.getLogger().log(Level.SEVERE, "Broadcast cannot request to listen to data");
 	        }
-	        boolean result = false;
-			while(true){
-				try {
-					result = executorService.awaitTermination(7, TimeUnit.HOURS);
-					LoggerUtil.getLogger().info("Broadcast Connection lost - "+result);
-					break;
-				} catch (Exception e) {
-					LoggerUtil.getLogger().log(Level.SEVERE, "Broadcast Connection interrupted", e);
-				}
-			}
+    		if(result){
+    			long timestart = System.currentTimeMillis();
+    			long timeend = System.currentTimeMillis();
+    			while((timeend-timestart)<20500000){
+    				try {
+    					long diff = 20500000 - System.currentTimeMillis() + timestart;
+    					if(diff > 0){
+    						Thread.sleep(diff);
+    					}
+    				} catch (Exception e) {}
+    				timeend = System.currentTimeMillis();
+    			}
+    		}
+    		try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {}
 			cal = Calendar.getInstance(); 
 			hour = String.format("%02d",cal.get(Calendar.HOUR_OF_DAY));
 			minute = String.format("%02d",cal.get(Calendar.MINUTE));
 			lasttime = hour+":"+minute;
 		}
+    	System.exit(0);
     }
     
     

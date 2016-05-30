@@ -6,12 +6,12 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 
 import com.stockdata.bpwealth.broadcast.TickData;
+import com.stockexit.kite.OrderDispatcher;
+import com.stockexit.kite.TradeConfirmation;
 import com.stockexit.util.LoggerUtil;
 import com.stockexit.util.SendMail;
 import com.stockexit.util.StockExitUtil;
 import com.stockexit.util.SynQueue;
-import com.stockexit.zerodha.OrderDispatcher;
-import com.stockexit.zerodha.TradeConfirmation;
 
 public class SymbolEstimator {
 	
@@ -542,11 +542,7 @@ public class SymbolEstimator {
 					}
 				}
 			}
-			long loopstarttime = System.currentTimeMillis();
-	    	while(((System.currentTimeMillis()-loopstarttime)<4000)){
-	    		intervalwait();
-	    	}
-	    	od.closeSocket();
+			
 	    	int mqyy;
 	    	if(StockExitUtil.isReal){
 	    		mqyy = od.getExchangeConfirmationCnt(ssymb, uqyy, getEntryExpiry());
@@ -575,7 +571,6 @@ public class SymbolEstimator {
 				intervalwait();
 			}
 			List<TradeConfirmation> trade = pollTrade(od, ssymb, curprice, mqyy);
-			od.closeSocket();
 			if(trade != null && trade.size() == mqyy){
 				double sum=0;
 				for(TradeConfirmation tc : trade){
