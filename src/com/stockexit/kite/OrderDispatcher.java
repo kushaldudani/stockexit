@@ -198,7 +198,7 @@ public class OrderDispatcher {
     			}
     		}
     		in.close();
-    		if(tradedprice!=null){
+    		if(tradedprice!=null && Double.parseDouble(tradedprice)>1/*0 is risky*/){
     			return new TradeConfirmation(Double.parseDouble(tradedprice));
     		}
     	}catch(Exception e){
