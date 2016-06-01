@@ -382,10 +382,7 @@ public class SymbolEstimator {
 		}else if((targetTimer>0) && (targetTimer<100) && ((totalticks-targetTimer)>=0)){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}*/
-		if(dummyLocalMax >= 2.6 && curprofit <= 2.35){
-			return sellStock(curprice, curprofit, "PullBack",lasttime, getEntryBudget());
-		}
-		if(curprofit >= 3.5){
+		if(curprofit >= 3){
 			return sellStock(curprice, curprofit, "Max",lasttime, getEntryBudget());
 		}
 		/*else if(lasttime.compareTo("09:30") >= 0 && !sss.equals("NIFTY") && curprofit >= getNiftyBasedProfitThreshold() 

@@ -113,6 +113,7 @@ public class OrderDispatcher {
     		URL obj = new URL("https://api.kite.trade/orders/"+piorderid+"?api_key="+apikey+"&access_token="+accesstoken);
     		HttpsURLConnection con = (HttpsURLConnection) obj.openConnection();
     		con.setRequestMethod("GET");
+    		con.setRequestProperty("X-Kite-version", "1");
     		BufferedReader in = new BufferedReader(
 		        new InputStreamReader(con.getInputStream()));
     		String inputLine;
@@ -128,6 +129,7 @@ public class OrderDispatcher {
     			obj = new URL("https://api.kite.trade/orders/regular/"+piorderid+"?api_key="+apikey+"&access_token="+accesstoken);
     			con = (HttpsURLConnection) obj.openConnection();
     			con.setRequestMethod("DELETE");
+    			con.setRequestProperty("X-Kite-version", "1");
     			in = new BufferedReader(
     				new InputStreamReader(con.getInputStream()));
     			in.close();
@@ -177,6 +179,7 @@ public class OrderDispatcher {
     		URL obj = new URL("https://api.kite.trade/orders/"+orderid+"?api_key="+apikey+"&access_token="+accesstoken);
     		HttpsURLConnection con = (HttpsURLConnection) obj.openConnection();
     		con.setRequestMethod("GET");
+    		con.setRequestProperty("X-Kite-version", "1");
     		BufferedReader in = new BufferedReader(
 		        new InputStreamReader(con.getInputStream()));
     		String inputLine;
