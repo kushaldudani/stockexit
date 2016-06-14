@@ -67,6 +67,9 @@ public class OrderRequest {
 		HttpsURLConnection con = (HttpsURLConnection) obj.openConnection();
 		con.setRequestMethod("POST");
 		con.setRequestProperty("X-Kite-version", "1");
+		if(symbol.contains("&")){
+			symbol.replace("&", "%26");
+		}
 		String urlParameters = "api_key="+apikey+"&access_token="+accesstoken+"&tradingsymbol="+symbol+"&exchange="+exchange+"&transaction_type="+orderSide+"&order_type="+orderType+"&quantity="+initialQty+"&product="+productType+"&validity="+validity+"&price="+limitPrice;
 		if(triggerPrice>0){
 			urlParameters = urlParameters + "&trigger_price="+triggerPrice;
