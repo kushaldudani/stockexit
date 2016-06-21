@@ -2,9 +2,7 @@ package com.stockexit.net;
 
 import java.util.Calendar;
 import java.util.List;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 
 import com.stockexit.util.LoggerUtil;
@@ -13,109 +11,48 @@ import com.stockexit.util.LoggerUtil;
 
 public class NewsCache implements Runnable {
 	
-	private Set<String> stocks;
-	private String date;
-	private String daybefore;
-	private static Map<String, Integer> newsMap = new HashMap<String, Integer>();
+	private List<ExitWorker> workers;
+	static AtomicBoolean daysmax = new AtomicBoolean(false);
 	
-	public NewsCache(Set<String> stocks, String date, String daybefore) {
-		this.stocks = stocks;
-		this.date = date;
-		this.daybefore = daybefore;
-	}
-	
-	private static synchronized void setNewsImportance(String stock, int importance) {
-		newsMap.put(stock, importance);
-	}
-	
-	public static synchronized int getNewsImportance(String stock) {
-		if(newsMap.containsKey(stock)){
-			return newsMap.get(stock);
-		}
-		return 0;
+	public NewsCache(List<ExitWorker> workers) {
+		this.workers = workers;
 	}
 
 	@Override
 	public void run() {
 		while (true) {
-			NewsLinesReader db=null;
 			try {
 				Calendar cal = Calendar.getInstance();
 				String hour = String.format("%02d", cal.get(Calendar.HOUR_OF_DAY));
 				String minute = String.format("%02d", cal.get(Calendar.MINUTE));
 				String lasttime = hour + ":" + minute;
-				if (lasttime.compareTo("14:50") >= 0) {
+				if (lasttime.compareTo("15:00") >= 0) {
 					break;
 				}
-				intervalwait();
-				db = new NewsLinesReader();
-				db.openSession();
-				for (String stock : stocks) {
-					List<Newsline> newslist = db.getNewsLines(stock, date);
-					findNewsImportance(newslist, stock);
-					List<Newsline> newslist2 = db.getNewsLines(stock, daybefore);
-					findNewsImportance(newslist2, stock);
+				intervalwait(2000);
+				int size = workers.size();
+				double daysprofit = 0;
+				for (ExitWorker wr : workers) {
+					daysprofit = daysprofit + wr.getEstimator().getCurPft();
+				}
+				if(size < 8 && daysprofit >= 8.5){
+					daysmax.set(true);
 				}
 			} catch (Exception e) {
 				LoggerUtil.getLogger().log(Level.SEVERE, "Exception in NewsCache", e);
-			}finally {
-				if(db!=null){db.closeSession();}
 			}
 		}
 	}
 	
-	private void findNewsImportance(List<Newsline> newslist, String stock) {
-		for (Newsline entry : newslist) {
-			if (entry.getSubject().equals("Financial Result Updates")) {
-				setNewsImportance(stock, 1);
-			}
-			if (entry.getSubject().equals("Press Release")) {
-				setNewsImportance(stock, 1);
-			}
-			if (entry.getSubject().contains("result")) {
-				setNewsImportance(stock, 1);
-			}
-			if (entry.getSubject().contains("Sales")) {
-				setNewsImportance(stock, 1);
-			}
-			if (entry.getSubject().contains("sale")) {
-				setNewsImportance(stock, 1);
-			}
-			if (entry.getSubject().contains("Sell")) {
-				setNewsImportance(stock, 1);
-			}
-			if (entry.getSubject().contains("numbers")) {
-				setNewsImportance(stock, 1);
-			}
-			if (entry.getSubject().contains("announce")) {
-				setNewsImportance(stock, 1);
-			}
-			if (entry.getSubject().contains("approval")) {
-				setNewsImportance(stock, 1);
-			}
-			if (entry.getSubject().contains("launch")) {
-				setNewsImportance(stock, 1);
-			}
-			if (entry.getSubject().contains("increase")) {
-				setNewsImportance(stock, 1);
-			}
-			if (entry.getSubject().contains("high")) {
-				setNewsImportance(stock, 1);
-			}
-			if (entry.getSubject().contains("low")) {
-				setNewsImportance(stock, 1);
-			}
-		}
-	}
 	
-	private void intervalwait() {
+	
+	private void intervalwait(int timetowait) {
 		long timestamp = System.currentTimeMillis();
-		int timetowait = (120000);
 		long curtimestamp;
 		while((curtimestamp = System.currentTimeMillis()) < (timestamp+timetowait)){
 			try {
 				Thread.sleep(timetowait-curtimestamp+timestamp);
-			} catch (InterruptedException e) {
+			} catch (Exception e) {
 				LoggerUtil.getLogger().info("Thread interrrupted in interval wait - ");
 			}
 		}

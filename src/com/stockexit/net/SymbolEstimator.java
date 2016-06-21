@@ -333,6 +333,7 @@ public class SymbolEstimator {
 		if(curprofit < dummyLocalMin) {
 			dummyLocalMin = curprofit;
 		}
+		setCurPft(curprofit);
 		/*if(lasttime.compareTo("12:30") >= 0 && recordedProfitAt2 == -200){
 			recordedProfitAt2 = curprofit;
 		}
@@ -342,7 +343,9 @@ public class SymbolEstimator {
 		if(lasttime.compareTo("15:15") >= 0){
 			return sellStock(curprice, curprofit, "Endday2",lasttime, getEntryBudget());
 		}
-		
+		if(NewsCache.daysmax.get() == true){
+			return sellStock(curprice, curprofit, "DaysMax",lasttime, getEntryBudget());
+		}
 		/*if((targetTimer>0) && (targetTimer>100) && ((System.currentTimeMillis()-targetTimer)>0)){
 			return sellStock(curprice, curprofit, "Endday",lasttime);
 		}else if((targetTimer>0) && (targetTimer<100) && ((totalticks-targetTimer)>=0)){
@@ -382,6 +385,16 @@ public class SymbolEstimator {
 		}*/
 		
 		return false;
+	}
+	
+	private double pr=0;
+
+	private synchronized void setCurPft(double pr){
+		this.pr = pr;
+	}
+	
+	public synchronized double getCurPft(){
+		return this.pr;
 	}
 	
 	/*private double getNiftyBasedProfitThreshold(){

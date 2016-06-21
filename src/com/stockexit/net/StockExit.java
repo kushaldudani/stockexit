@@ -9,10 +9,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
@@ -52,30 +50,24 @@ public class StockExit {
 		}
 		db.closeSession();
 		
-		Set<String> stocksForNews = new HashSet<String>();
+		List<ExitWorker> workers = new ArrayList<>();
 		final ReentrantLock lock = new ReentrantLock();
 		Map<String,List<SynQueue<TickData>>> queuemap = new HashMap<>();
 		for(BuySell bsell : records){
 			if(bsell.isExited()==false){
 				String sss = bsell.getSymbol().split("-")[0];
-				/*if(!sss.equals("NIFTY") && bsell.getType().equals("Long")){
-					setLongEntry(sss);
-				}else if(!sss.equals("NIFTY") && bsell.getType().equals("Short")){
-					setShortEntry(sss);
-				}*/
-				stocksForNews.add(sss);
 				SynQueue<TickData> qu = new SynQueue<TickData>();
-				new Thread(new ExitWorker(bsell,null,qu,lastentry,lock)).start();
+				ExitWorker worker = new ExitWorker(bsell,null,qu,lastentry,lock);
+				new Thread(worker).start();
+				workers.add(worker);
 				if(!queuemap.containsKey(sss)){
 					queuemap.put(sss, new ArrayList<SynQueue<TickData>>());
 				}
 				queuemap.get(sss).add(qu);
 			}
 		}
-		//if(!queuemap.containsKey("NIFTY")){
-		//	queuemap.put("NIFTY", new ArrayList<SynQueue<TickData>>());
-		//}
-		//new Thread(new NewsCache(stocksForNews, lastentry, secondlastentry)).start();
+		
+		new Thread(new NewsCache(workers)).start();
 		BroadCastManager.mainrun(queuemap);
 	}
 	

@@ -19,9 +19,8 @@ public class ExitWorker implements Runnable {
 	private BuySell buysell;
 	private SecondModel smodel;
 	private SynQueue<TickData> qu;
-	private String curdate;
-	private ReentrantLock lock;
 	private List<Double> prices;
+	private SymbolEstimator estimator;
 	
 	
 	public ExitWorker(BuySell buysell, SecondModel smodel, 
@@ -29,10 +28,8 @@ public class ExitWorker implements Runnable {
 		this.buysell = buysell;
 		this.smodel = smodel;
 		this.qu = qu;
-		this.curdate = curdate;
-		this.lock = lock;
 		prices = new ArrayList<Double>();
-		
+		this.estimator = new SymbolEstimator(buysell, smodel, curdate, lock, qu);
 	}
 	
 	/*private double trendprice10 = 0;
@@ -49,7 +46,7 @@ public class ExitWorker implements Runnable {
 		}else{
 			System.exit(1);
 		}
-		SymbolEstimator estimator = new SymbolEstimator(buysell, smodel, curdate, lock, qu);
+		
 		boolean sold = false;
 		//intitialwait();
 		while(true){
@@ -113,6 +110,9 @@ public class ExitWorker implements Runnable {
 		
 	}
 
+	public SymbolEstimator getEstimator(){
+		return this.estimator;
+	}
 
 	private String getEntryType(){
 		if(buysell != null){

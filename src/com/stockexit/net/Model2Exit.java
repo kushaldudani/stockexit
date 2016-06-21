@@ -73,7 +73,7 @@ public class Model2Exit {
 		if(!queuemap.containsKey("NIFTY")){
 			queuemap.put("NIFTY", new ArrayList<SynQueue<TickData>>());
 		}
-		new Thread(new NewsCache(stocksForNews, lastentry, secondlastentry)).start();
+		//new Thread(new NewsCache(stocksForNews, lastentry, secondlastentry)).start();
 		BroadCastManager.mainrun(queuemap);
 	}
 	
