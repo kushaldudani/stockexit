@@ -17,9 +17,9 @@ public class SymbolEstimator {
 	
 	private BuySell buysell;
 	private SecondModel smodel;
-	private String curdate;
-	private ReentrantLock lock;
-	private SynQueue<TickData> qu;
+	//private String curdate;
+	//private ReentrantLock lock;
+	//private SynQueue<TickData> qu;
 	//private Map<String, Integer> tokensmap;
 	//private Map<Integer, Integer> marketlotmap;
 	
@@ -29,9 +29,9 @@ public class SymbolEstimator {
 			SynQueue<TickData> qu) {
 		this.buysell = buysell;
 		this.smodel = smodel;
-		this.curdate = curdate;
-		this.lock = lock;
-		this.qu = qu;
+		//this.curdate = curdate;
+		//this.lock = lock;
+		//this.qu = qu;
 		//this.tokensmap = StockExitUtil.buildTokensMap();
 		//this.marketlotmap = StockExitUtil.buildMarketLotMap();
 		//this.stopthreshold = getstopthreshold();
@@ -64,47 +64,13 @@ public class SymbolEstimator {
 				LoggerUtil.getLogger().info("Sold - "+ismidday +" - " + buysell.getSymbol() );
 				//removeLongShort(buysell.getSymbol().split("-")[0], buysell.getType());
 			}else{
-				String sss = smodel.getSymbol().split("-")[0];
-				if(sss.equals("NIFTY")&&qyy < getEntryBudget()){
-					double trueexitprice = ((smodel.getExitprice()*smodel.getDaystried()) + tradedprice*qyy)/(smodel.getDaystried()+qyy);
-					smodel.setExitprice(trueexitprice);
-					int newdaystried = smodel.getDaystried() + qyy;
-					smodel.setDaystried(newdaystried);
-					int left = (getEntryBudget() - qyy);
-					smodel.setHasbudget(left);
-				}else {
-					smodel.setExited(true);
-					double trueexitprice = ((smodel.getExitprice()*smodel.getDaystried()) + tradedprice*qyy)/(smodel.getDaystried()+qyy);
-					smodel.setExitprice(trueexitprice);
-					smodel.setProfit(getPft(smodel.getEnterprice(), trueexitprice, smodel.getType()));
-					int newdaystried = smodel.getDaystried() + qyy;
-					smodel.setHasbudget(newdaystried);
-					smodel.setDaystried(0);
-					String letter = smodel.getType().substring(0, 1);
-					smodel.setType(letter+lasttime);
-				}
 				
-				DbManager db = new DbManager();
-				db.openSession();
-				db.insertOrUpdate(smodel);
-				db.closeSession();
-				LoggerUtil.getLogger().info("Sold - "+ismidday +" - " + smodel.getSymbol() );
-				removeLongShort(sss, smodel.getType());
-				if(sss.equals("NIFTY")&&!smodel.isExited()){
-					new Thread(new ExitWorker(null,smodel,qu,curdate,lock)).start();
-				}
 			}
 		}catch(Exception e){
 			LoggerUtil.getLogger().log(Level.SEVERE, "In SymbolEstimator UpdateStock failed", e);
 		}
 	}
-	private void removeLongShort(String sss, String type){
-		if(type.substring(0, 1).equals("L") && !sss.equals("NIFTY")){
-			Model2Exit.removeLongEntry(sss);
-		}else if(type.substring(0, 1).equals("S") && !sss.equals("NIFTY")){
-			Model2Exit.removeShortEntry(sss);
-		}
-	}
+	
 	private double getEntryEnterprice(){
 		if(buysell != null){
 			return buysell.getEnterprice();
@@ -521,7 +487,6 @@ public class SymbolEstimator {
 	}
 
 	private boolean sellStock(double curprice, double curprofit, String ismidday, String lasttime, int uqyy) {
-		lock.lock();
 		try{
 			String ssymb = getEntrySymbol().split("-")[0];
 			String stoplossid = getEntryStoplossid();
@@ -556,17 +521,17 @@ public class SymbolEstimator {
 	    	od = new OrderDispatcher();
 			for(int i=0;i<mqyy;i++){
 				if(getEntryType().equals("Long")){
-					double limitprice = curprice*(0.995);
+					double limitprice = curprice*(0.999);
 					if(StockExitUtil.isReal){
 						od.sendOrder((short)1, ssymb, StockExitUtil.roundup(limitprice), getEntryExpiry(), 1);
 					}
 				}else{
-					double limitprice = curprice*(1.005);
+					double limitprice = curprice*(1.001);
 					if(StockExitUtil.isReal){
 						od.sendOrder((short)0, ssymb, StockExitUtil.roundup(limitprice), getEntryExpiry(), 1);
 					}
 				}
-				intervalwait();
+				intervalwait(500);
 			}
 			List<TradeConfirmation> trade = pollTrade(od, ssymb, curprice, mqyy);
 			if(trade != null && trade.size() == mqyy){
@@ -590,7 +555,7 @@ public class SymbolEstimator {
 			return true;
 		}catch(Exception e){
 			LoggerUtil.getLogger().log(Level.SEVERE, "In SymbolEstimator SellStock failed "+getEntrySymbol(), e);
-		}finally { lock.unlock();}
+		}finally { }
 		LoggerUtil.getLogger().info("NotSold connection problem- "+ismidday +" - " + getEntrySymbol() );
 		SendMail.generateAndSendEmail("Not able to square off - "+ getEntrySymbol() + " qty - "+uqyy+
 				" connection problem. please square off from terminal");
@@ -599,10 +564,7 @@ public class SymbolEstimator {
 	
 	private List<TradeConfirmation> pollTrade(OrderDispatcher od, String symbol, double price, int mqyy) {
 		if(StockExitUtil.isReal){
-			long loopstarttime = System.currentTimeMillis();
-			while(((System.currentTimeMillis()-loopstarttime)<3000)){
-				intervalwait();
-			}
+			intervalwait(200000);
 			return od.getTradeConfirmation(symbol, getEntryExpiry());
 		}else{
 			List<TradeConfirmation> trades = new ArrayList<>();
@@ -613,14 +575,13 @@ public class SymbolEstimator {
 		}
 	}
 	
-	private void intervalwait() {
+	private void intervalwait(int timetowait) {
 		long timestamp = System.currentTimeMillis();
-		int timetowait = (500);
 		long curtimestamp;
 		while((curtimestamp = System.currentTimeMillis()) < (timestamp+timetowait)){
 			try {
 				Thread.sleep(timetowait-curtimestamp+timestamp);
-			} catch (InterruptedException e) {}
+			} catch (Exception e) {}
 		}
 	}
 
