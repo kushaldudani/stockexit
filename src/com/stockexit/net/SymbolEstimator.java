@@ -534,12 +534,12 @@ public class SymbolEstimator {
 	    	od = new OrderDispatcher();
 			for(int i=0;i<mqyy;i++){
 				if(getEntryType().equals("Long")){
-					double limitprice = curprice*(1.001);
+					double limitprice = curprice;
 					if(StockExitUtil.isReal){
 						od.sendOrder((short)1, ssymb, StockExitUtil.roundup(limitprice), getEntryExpiry(), 1);
 					}
 				}else{
-					double limitprice = curprice*(0.999);
+					double limitprice = curprice;
 					if(StockExitUtil.isReal){
 						od.sendOrder((short)0, ssymb, StockExitUtil.roundup(limitprice), getEntryExpiry(), 1);
 					}
@@ -562,6 +562,10 @@ public class SymbolEstimator {
 			}else{
 				LoggerUtil.getLogger().info("NotSold but order dispatched- "+ismidday +" - " + getEntrySymbol() );
 				int slhitcnt = uqyy-mqyy;
+				double sum = curprice*mqyy;
+				sum = sum + (slhitcnt*calculateStoplossprice());
+				double avgapproxprice = (sum/(double)uqyy);
+				updateStock(avgapproxprice, lasttime, ismidday, uqyy);
 				SendMail.generateAndSendEmail("Tried squaring off - "+ getEntrySymbol() + " qty - "+uqyy+
 						" but did not get trade confirmation. please verify from terminal that there are no remaining positions ALSO please note that out of which qty - "+slhitcnt+" hit stoploss and should have been squared off by CTCL");
 			}
