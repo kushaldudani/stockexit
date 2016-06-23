@@ -534,12 +534,12 @@ public class SymbolEstimator {
 	    	od = new OrderDispatcher();
 			for(int i=0;i<mqyy;i++){
 				if(getEntryType().equals("Long")){
-					double limitprice = curprice*(0.999);
+					double limitprice = curprice*(1.001);
 					if(StockExitUtil.isReal){
 						od.sendOrder((short)1, ssymb, StockExitUtil.roundup(limitprice), getEntryExpiry(), 1);
 					}
 				}else{
-					double limitprice = curprice*(1.001);
+					double limitprice = curprice*(0.999);
 					if(StockExitUtil.isReal){
 						od.sendOrder((short)0, ssymb, StockExitUtil.roundup(limitprice), getEntryExpiry(), 1);
 					}
