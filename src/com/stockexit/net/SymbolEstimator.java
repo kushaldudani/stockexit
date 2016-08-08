@@ -340,9 +340,9 @@ public class SymbolEstimator {
 		
 		double dipfromprofitat2 = curprofit - recordedProfitAt2;*/
 		
-		if(lasttime.compareTo("15:15") >= 0){
-			return sellStock(curprice, curprofit, "Endday2",lasttime, getEntryBudget());
-		}
+		//if(lasttime.compareTo("15:15") >= 0){
+		//	return sellStock(curprice, curprofit, "Endday2",lasttime, getEntryBudget());
+		//}
 		if(NewsCache.daysmax.get() == true){
 			return sellStock(curprice, curprofit, "DaysMax",lasttime, getEntryBudget());
 		}
@@ -502,7 +502,7 @@ public class SymbolEstimator {
 	private boolean sellStock(double curprice, double curprofit, String ismidday, String lasttime, int uqyy) {
 		try{
 			String ssymb = getEntrySymbol().split("-")[0];
-			String stoplossid = getEntryStoplossid();
+			/*String stoplossid = getEntryStoplossid();
 			String[] stoplossids = stoplossid.split(";");
 			OrderDispatcher od = new OrderDispatcher();
 			for(int i=0;i<uqyy;i++){
@@ -530,16 +530,17 @@ public class SymbolEstimator {
 	    		}
 	    	}else{
 	    		mqyy = (dummyLocalMin <= -1.9)?0:uqyy;
-	    	}
-	    	od = new OrderDispatcher();
+	    	}*/
+			int mqyy = (dummyLocalMin <= -1.9)?0:uqyy;
+			OrderDispatcher od = new OrderDispatcher();
 			for(int i=0;i<mqyy;i++){
 				if(getEntryType().equals("Long")){
-					double limitprice = curprice;
+					double limitprice = (curprice*1.001);
 					if(StockExitUtil.isReal){
 						od.sendOrder((short)1, ssymb, StockExitUtil.roundup(limitprice), getEntryExpiry(), 1);
 					}
 				}else{
-					double limitprice = curprice;
+					double limitprice = (curprice*0.999);;
 					if(StockExitUtil.isReal){
 						od.sendOrder((short)0, ssymb, StockExitUtil.roundup(limitprice), getEntryExpiry(), 1);
 					}
@@ -558,7 +559,7 @@ public class SymbolEstimator {
 				double avgtradedprice = (sum/(double)uqyy);
 				updateStock(avgtradedprice, lasttime, ismidday, uqyy);
 				SendMail.generateAndSendEmail("Successfully squared off - "+ getEntrySymbol() + " qty - "+uqyy+"  "+getEntryType() + 
-						" at price - " + getEntryExitprice()+" please verify, enterprice - "+getEntryEnterprice()+" AND out of which qty - "+slhitcnt+" hit stoploss and should have been squared off by CTCL");
+						" at price - " + getEntryExitprice()+" please verify, enterprice - "+getEntryEnterprice());
 			}else{
 				LoggerUtil.getLogger().info("NotSold but order dispatched- "+ismidday +" - " + getEntrySymbol() );
 				int slhitcnt = uqyy-mqyy;
@@ -567,7 +568,7 @@ public class SymbolEstimator {
 				double avgapproxprice = (sum/(double)uqyy);
 				updateStock(avgapproxprice, lasttime, ismidday, uqyy);
 				SendMail.generateAndSendEmail("Tried squaring off - "+ getEntrySymbol() + " qty - "+uqyy+
-						" but did not get trade confirmation. please verify from terminal that there are no remaining positions ALSO please note that out of which qty - "+slhitcnt+" hit stoploss and should have been squared off by CTCL");
+						" but did not get trade confirmation.");
 			}
 			return true;
 		}catch(Exception e){
@@ -575,7 +576,7 @@ public class SymbolEstimator {
 		}finally { }
 		LoggerUtil.getLogger().info("NotSold connection problem- "+ismidday +" - " + getEntrySymbol() );
 		SendMail.generateAndSendEmail("Not able to square off - "+ getEntrySymbol() + " qty - "+uqyy+
-				" connection problem. please square off from terminal");
+				" connection problem.");
 		return true;
 	}
 	

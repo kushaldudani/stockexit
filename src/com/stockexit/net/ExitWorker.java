@@ -71,10 +71,10 @@ public class ExitWorker implements Runnable {
 				//}else 
 				if(sold){
 					break;
-				}else if(lasttime.compareTo("15:28") > 0){
+				}else if(lasttime.compareTo("15:18") > 0){
 					LoggerUtil.getLogger().info("Counld not exit stock till end of day");
 					break;
-				}else if(lasttime.compareTo("09:16") >= 0 && lasttime.compareTo("15:28") <= 0){
+				}else if(lasttime.compareTo("09:16") >= 0 && lasttime.compareTo("15:18") <= 0){
 					sold = estimator.dummyExit(prices,low,high,lasttime);
 				}/*else if(lasttime.compareTo("09:55") >= 0 && lasttime.compareTo("10:45") < 0){
 					if(trendprice10 == 0){
