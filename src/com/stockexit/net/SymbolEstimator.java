@@ -340,9 +340,9 @@ public class SymbolEstimator {
 		
 		double dipfromprofitat2 = curprofit - recordedProfitAt2;*/
 		
-		//if(lasttime.compareTo("15:15") >= 0){
-		//	return sellStock(curprice, curprofit, "Endday2",lasttime, getEntryBudget());
-		//}
+		if(!StockExitUtil.isReal && lasttime.compareTo("15:15") >= 0){
+			return sellStock(curprice, curprofit, "Endday2",lasttime, getEntryBudget());
+		}
 		if(NewsCache.daysmax.get() == true){
 			return sellStock(curprice, curprofit, "DaysMax",lasttime, getEntryBudget());
 		}
